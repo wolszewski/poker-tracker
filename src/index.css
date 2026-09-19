@@ -99,11 +99,8 @@ button.flag svg {
 }
 
 .totals {
-  position: sticky;
-  bottom: 0.5rem;
-  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
   margin-top: 1rem;
   padding: 0.75rem;
@@ -312,10 +309,6 @@ button.small {
 }
 
 @media (max-width: 26rem) {
-  .totals {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .totals > .off {
     margin: 0;
   }

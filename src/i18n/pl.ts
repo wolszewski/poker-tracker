@@ -44,7 +44,6 @@ export const pl: Dictionary = {
   totals: 'Sumy',
   cashOuts: 'Wypłaty',
   discrepancy: 'Rozbieżność',
-  stillPlaying: 'W grze',
 
   settlement: 'Rozliczenie',
   settlementNeedsZero: (discrepancy) =>

@@ -1,10 +1,11 @@
 import { useText } from './i18n/text'
 import { discrepancy, formatAmount, formatSigned, stillPlaying, totalBuyIns, totalCashOuts, type Night } from './night/night'
 
+/** Hidden until every Player has a Cash-out, since the totals only mean something once the Night is over. */
 export function TotalsBar({ night }: { night: Night }) {
   const t = useText()
+  if (night.players.length === 0 || stillPlaying(night).length > 0) return null
   const nightDiscrepancy = discrepancy(night)
-  const playing = stillPlaying(night).length
 
   return (
     <section className="totals" aria-label={t.totals}>
@@ -19,10 +20,6 @@ export function TotalsBar({ night }: { night: Night }) {
       <div className={nightDiscrepancy !== 0 ? 'off' : ''}>
         <span className="label">{t.discrepancy}</span>
         <span className="value">{formatSigned(nightDiscrepancy)}</span>
-      </div>
-      <div>
-        <span className="label">{t.stillPlaying}</span>
-        <span className="value">{playing}</span>
       </div>
     </section>
   )

@@ -65,7 +65,6 @@ export const en = {
   totals: 'Totals',
   cashOuts: 'Cash-outs',
   discrepancy: 'Discrepancy',
-  stillPlaying: 'Still playing',
 
   settlement: 'Settlement',
   settlementNeedsZero: (discrepancy: string) =>
