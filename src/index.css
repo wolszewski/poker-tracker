@@ -356,3 +356,25 @@ button.small {
   border: 1px solid var(--border);
   border-radius: 0.5rem;
 }
+
+.settlement {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.settlement h2 {
+  margin-bottom: 0.5rem;
+}
+
+.settlement .hint {
+  margin: 0;
+}
+
+.transfers {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}

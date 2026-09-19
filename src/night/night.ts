@@ -176,11 +176,124 @@ export const formatAmount = (amount: Amount): string => {
 export const formatSigned = (amount: Amount): string =>
   amount > 0 ? `+${formatAmount(amount)}` : formatAmount(amount)
 
+// Settlement: who pays whom, once every Player is finished and the Discrepancy is 0.
+
+/** One payment from a losing Player to a winning Player. */
+export type Transfer = { readonly from: string; readonly to: string; readonly amount: Amount }
+
+export type Settlement =
+  | { available: true; transfers: readonly Transfer[] }
+  | {
+      available: false
+      reason:
+        | { kind: 'still-playing'; players: readonly Player[] }
+        | { kind: 'discrepancy'; discrepancy: Amount }
+    }
+
+type Balance = { id: string; net: number }
+
+/** Biggest loser pays biggest winner, repeated. Ties go to the Player added first. */
+const greedyTransfers = (balances: readonly Balance[]): Transfer[] => {
+  const open = balances.map((balance) => ({ ...balance }))
+  const transfers: Transfer[] = []
+  const biggest = (sign: 1 | -1) =>
+    open.reduce<Balance | undefined>(
+      (best, balance) => (balance.net * sign > 0 && (!best || balance.net * sign > best.net * sign) ? balance : best),
+      undefined,
+    )
+  for (;;) {
+    const loser = biggest(-1)
+    const winner = biggest(1)
+    if (!loser || !winner) return transfers
+    const amount = Math.min(-loser.net, winner.net)
+    transfers.push({ from: loser.id, to: winner.id, amount: cents(amount) })
+    loser.net += amount
+    winner.net -= amount
+  }
+}
+
+/**
+ * Splits the balances into the largest number of groups that each sum to 0.
+ * A group of k Players can then be squared with k − 1 Transfers, which is the minimum overall.
+ * Exhaustive over subsets, so only for small Nights.
+ */
+const zeroSumGroups = (balances: readonly Balance[]): Balance[][] => {
+  const n = balances.length
+  const full = (1 << n) - 1
+  const sums = new Array<number>(full + 1).fill(0)
+  // most[mask]: the most zero-sum groups the Players in mask can be split into, when mask sums to 0.
+  const most = new Array<number>(full + 1).fill(0)
+  for (let mask = 1; mask <= full; mask++) {
+    const lowest = 31 - Math.clz32(mask & -mask)
+    sums[mask] = sums[mask & (mask - 1)] + balances[lowest].net
+    for (let i = 0; i < n; i++) {
+      if (mask & (1 << i)) most[mask] = Math.max(most[mask], most[mask ^ (1 << i)])
+    }
+    if (sums[mask] === 0) most[mask] += 1
+  }
+  // Walk back from everyone, peeling off Players in an order where each group's members are adjacent.
+  const order: Balance[] = []
+  let mask = full
+  while (mask) {
+    const bonus = sums[mask] === 0 ? 1 : 0
+    let i = 0
+    while (!(mask & (1 << i)) || most[mask ^ (1 << i)] + bonus !== most[mask]) i++
+    order.push(balances[i])
+    mask ^= 1 << i
+  }
+  order.reverse()
+  const groups: Balance[][] = []
+  let group: Balance[] = []
+  let running = 0
+  for (const balance of order) {
+    group.push(balance)
+    running += balance.net
+    if (running === 0) {
+      groups.push(group)
+      group = []
+    }
+  }
+  return groups
+}
+
+/** Largest Night for which the fewest Transfers are found exactly; above it, greedy is used. */
+const EXACT_SETTLEMENT_LIMIT = 10
+
+export const settle = (night: Night): Settlement => {
+  const playing = stillPlaying(night)
+  if (playing.length > 0) return { available: false, reason: { kind: 'still-playing', players: playing } }
+  const gap = discrepancy(night)
+  if (gap !== 0) return { available: false, reason: { kind: 'discrepancy', discrepancy: gap } }
+  const balances = night.players
+    .map((player) => ({ id: player.id, net: netResult(night, player.id) ?? 0 }))
+    .filter((balance) => balance.net !== 0)
+  if (night.players.length > EXACT_SETTLEMENT_LIMIT) {
+    return { available: true, transfers: greedyTransfers(balances) }
+  }
+  // Keep each group in the order the Players were added, so the output reads naturally.
+  const position = (balance: Balance) => balances.indexOf(balance)
+  const groups = zeroSumGroups(balances)
+    .map((group) => [...group].sort((a, b) => position(a) - position(b)))
+    .sort((a, b) => position(a[0]) - position(b[0]))
+  return { available: true, transfers: groups.flatMap(greedyTransfers) }
+}
+
 const summaryLine = (night: Night, player: Player): string => {
   const boughtIn = `${player.name}: bought in ${formatAmount(totalBuyIn(night, player.id))}`
   const net = netResult(night, player.id)
   if (player.cashOut == null || net === undefined) return `${boughtIn}, still playing`
   return `${boughtIn}, cashed out ${formatAmount(player.cashOut)}, net ${formatSigned(net)}`
+}
+
+/** Describes a Transfer for people, for example "Bob pays Alice 20". */
+export const describeTransfer = (night: Night, transfer: Transfer): string =>
+  `${findPlayer(night, transfer.from)?.name} pays ${findPlayer(night, transfer.to)?.name} ${formatAmount(transfer.amount)}`
+
+const settlementLines = (night: Night): string[] => {
+  const settlement = settle(night)
+  if (night.players.length === 0 || !settlement.available) return []
+  const transfers = settlement.transfers.map((transfer) => describeTransfer(night, transfer))
+  return ['', 'Settlement:', ...(transfers.length > 0 ? transfers : ['Nobody owes anything.'])]
 }
 
 /** The plain-text summary of the Night that the Host pastes into the group chat. */
@@ -191,6 +304,7 @@ export const summary = (night: Night): string =>
     `Total buy-ins: ${formatAmount(totalBuyIns(night))}`,
     `Total cash-outs: ${formatAmount(totalCashOuts(night))}`,
     `Discrepancy: ${formatSigned(discrepancy(night))}`,
+    ...settlementLines(night),
   ].join('\n')
 
 // Saving: a Night as a string, with a format version so the format can change later.

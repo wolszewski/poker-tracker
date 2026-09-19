@@ -3,6 +3,7 @@ import { AddPlayerForm } from './AddPlayerForm'
 import { CopySummary } from './CopySummary'
 import { emptyNight, loadNight, saveNight, type Change, type Night } from './night/night'
 import { PlayerCard } from './PlayerCard'
+import { SettlementPanel } from './SettlementPanel'
 import { readSaved, writeSaved } from './storage'
 import { TotalsBar } from './TotalsBar'
 
@@ -30,6 +31,7 @@ export default function App() {
           <PlayerCard key={player.id} night={night} player={player} apply={apply} />
         ))}
       </ul>
+      <SettlementPanel night={night} />
       <TotalsBar night={night} />
 
       <div className="night-actions">

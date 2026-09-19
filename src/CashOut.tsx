@@ -14,7 +14,9 @@ export function CashOut({ night, player, apply }: Props) {
     return (
       <div className="cash-out">
         <p className="result">
-          Cash-out <strong>{formatAmount(player.cashOut)}</strong>
+          <span>
+            Cash-out <strong>{formatAmount(player.cashOut)}</strong>
+          </span>
           <span className={`net ${net > 0 ? 'win' : net < 0 ? 'loss' : ''}`}>
             Net result <strong>{formatSigned(net)}</strong>
           </span>

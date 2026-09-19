@@ -18,6 +18,7 @@ import {
   removePlayer,
   saveNight,
   setCashOut,
+  settle,
   stillPlaying,
   summary,
   totalBuyIn,
@@ -377,7 +378,7 @@ describe('saving and loading', () => {
 })
 
 describe('the summary', () => {
-  it('lists every finished Player, the totals and a Discrepancy of 0', () => {
+  it('lists every finished Player, the totals, a Discrepancy of 0 and the Settlement', () => {
     let night = nightWith('Alice', 'Bob')
     night = buyIns(night, 0, '50', '50')
     night = buyIns(night, 1, '100')
@@ -391,6 +392,9 @@ describe('the summary', () => {
         'Total buy-ins: 200',
         'Total cash-outs: 200',
         'Discrepancy: 0',
+        '',
+        'Settlement:',
+        'Bob pays Alice 50.5',
       ].join('\n'),
     )
   })
@@ -413,5 +417,136 @@ describe('the summary', () => {
         'Discrepancy: -80',
       ].join('\n'),
     )
+  })
+})
+
+/** A Night where every Player bought in 100 and cashed out 100 plus their Net result. */
+const finishedNight = (nets: Record<string, number>): Night => {
+  let night = nightWith(...Object.keys(nets))
+  Object.values(nets).forEach((net, index) => {
+    night = buyIns(night, index, '100')
+    night = cashOut(night, index, String(100 + net))
+  })
+  return night
+}
+
+const nameOf = (night: Night, id: string) => night.players.find((p) => p.id === id)!.name
+
+const transfersOf = (night: Night) => {
+  const settlement = settle(night)
+  if (!settlement.available) throw new Error('expected a Settlement')
+  return settlement.transfers.map((t) => `${nameOf(night, t.from)} pays ${nameOf(night, t.to)} ${formatAmount(t.amount)}`)
+}
+
+describe('Settlement availability', () => {
+  it('is not available while Players are still playing, and says who', () => {
+    let night = finishedNight({ Alice: 50, Bob: -50 })
+    night = buyIns(ok(addPlayer(night, 'Carol')), 2, '50')
+    const settlement = settle(night)
+    expect(settlement.available).toBe(false)
+    if (!settlement.available && settlement.reason.kind === 'still-playing') {
+      expect(settlement.reason.players.map((p) => p.name)).toEqual(['Carol'])
+    } else {
+      throw new Error('expected the still-playing reason')
+    }
+  })
+
+  it('is not available with a non-zero Discrepancy, and says how much', () => {
+    const night = finishedNight({ Alice: 50, Bob: -40 })
+    const settlement = settle(night)
+    if (!settlement.available && settlement.reason.kind === 'discrepancy') {
+      expect(formatSigned(settlement.reason.discrepancy)).toBe('+10')
+    } else {
+      throw new Error('expected the discrepancy reason')
+    }
+  })
+
+  it('has one Transfer from the loser to the winner of a two-Player Night', () => {
+    expect(transfersOf(finishedNight({ Alice: 50.5, Bob: -50.5 }))).toEqual(['Bob pays Alice 50.5'])
+  })
+})
+
+/** Checks that the Transfers bring every Player's Net result to exactly 0. */
+const expectSquared = (night: Night) => {
+  const settlement = settle(night)
+  if (!settlement.available) throw new Error('expected a Settlement')
+  for (const player of night.players) {
+    const paid = settlement.transfers.filter((t) => t.from === player.id).reduce((s, t) => s + t.amount, 0)
+    const received = settlement.transfers.filter((t) => t.to === player.id).reduce((s, t) => s + t.amount, 0)
+    expect(received - paid).toBe(netResult(night, player.id))
+  }
+  for (const transfer of settlement.transfers) expect(transfer.amount).toBeGreaterThan(0)
+  return settlement.transfers
+}
+
+describe('Settlement Transfers', () => {
+  it('uses the fewest Transfers when two Players exactly cancel out alongside others', () => {
+    // Greedy would pay Carol's 4 to Alice first and need 4 Transfers; the minimum is 3.
+    const night = finishedNight({ Alice: 5, Bob: 4, Carol: -4, Dave: -3, Erin: -2 })
+    expect(expectSquared(night)).toHaveLength(3)
+    expect(transfersOf(night)).toContain('Carol pays Bob 4')
+  })
+
+  it('finds the most groups that cancel out', () => {
+    // Three pairs that each cancel out: one Transfer per pair.
+    const night = finishedNight({ A: 7, B: -6, C: 6, D: -1, E: 1, F: -7 })
+    expect(expectSquared(night)).toHaveLength(3)
+  })
+
+  it('leaves Players with a Net result of 0 out of every Transfer', () => {
+    const night = finishedNight({ Alice: 30, Bob: 0, Carol: -30 })
+    const bob = idOf(night, 1)
+    expect(expectSquared(night).some((t) => t.from === bob || t.to === bob)).toBe(false)
+    expect(transfersOf(night)).toEqual(['Carol pays Alice 30'])
+  })
+
+  it('has no Transfers when nobody won or lost', () => {
+    expect(transfersOf(finishedNight({ Alice: 0, Bob: 0 }))).toEqual([])
+  })
+
+  it('squares decimal Net results exactly', () => {
+    const night = finishedNight({ Alice: 10.1, Bob: 20.2, Carol: -30.3 })
+    expect(expectSquared(night)).toHaveLength(2)
+  })
+
+  it('gives the same Transfers every time for the same Night', () => {
+    const night = finishedNight({ A: 12, B: 8, C: -5, D: -5, E: -10 })
+    expect(transfersOf(loadNight(saveNight(night)))).toEqual(transfersOf(night))
+    expect(transfersOf(night)).toEqual(transfersOf(night))
+  })
+
+  it('still squares everyone with the greedy method above 10 Players', () => {
+    const nets = [25, -10, 17, -3, -8, 40, -21, 6, -30, 12, -19, -9]
+    const night = finishedNight(Object.fromEntries(nets.map((net, i) => [`P${i + 1}`, net])))
+    expect(expectSquared(night).length).toBeLessThanOrEqual(nets.length - 1)
+  })
+})
+
+describe('the summary with a Settlement', () => {
+  it('adds the Transfers once the Settlement is available', () => {
+    const night = finishedNight({ Alice: 30, Bob: -10, Carol: -20 })
+    expect(summary(night)).toBe(
+      [
+        'Poker Night',
+        'Alice: bought in 100, cashed out 130, net +30',
+        'Bob: bought in 100, cashed out 90, net -10',
+        'Carol: bought in 100, cashed out 80, net -20',
+        'Total buy-ins: 300',
+        'Total cash-outs: 300',
+        'Discrepancy: 0',
+        '',
+        'Settlement:',
+        'Carol pays Alice 20',
+        'Bob pays Alice 10',
+      ].join('\n'),
+    )
+  })
+
+  it('says nobody pays anyone when every Net result is 0', () => {
+    expect(summary(finishedNight({ Alice: 0 }))).toMatch(/\n\nSettlement:\nNobody owes anything\.$/)
+  })
+
+  it('leaves the Settlement out while it is not available', () => {
+    expect(summary(finishedNight({ Alice: 30, Bob: -20 }))).not.toContain('Settlement')
   })
 })
