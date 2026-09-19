@@ -25,6 +25,8 @@ import {
   totalBuyIns,
   totalCashOuts,
 } from './night'
+import { en } from '../i18n/en'
+import { pl } from '../i18n/pl'
 
 describe('an empty Night', () => {
   it('has no Players and all totals at 0', () => {
@@ -48,8 +50,8 @@ describe('adding Players', () => {
   })
 
   it('rejects an empty or blank name', () => {
-    expect(addPlayer(emptyNight(), '').ok).toBe(false)
-    expect(addPlayer(emptyNight(), '   ').ok).toBe(false)
+    expect(addPlayer(emptyNight(), '')).toEqual({ ok: false, error: 'name-required' })
+    expect(addPlayer(emptyNight(), '   ')).toEqual({ ok: false, error: 'name-required' })
   })
 
   it('trims spaces around the name', () => {
@@ -107,15 +109,20 @@ describe('Total buy-ins', () => {
 })
 
 describe('Buy-in amount validation', () => {
-  it.each(['0', '0.00', '-50', '10.555', 'abc', '', '  ', '1e3', '12abc', 'Infinity'])(
-    'rejects %j with a message',
-    (amount) => {
-      const night = nightWith('Alice')
-      const change = addBuyIn(night, idOf(night, 0), amount)
-      expect(change.ok).toBe(false)
-      if (!change.ok) expect(change.error).not.toBe('')
-    },
-  )
+  it.each(['-50', '10.555', 'abc', '', '  ', '1e3', '12abc', 'Infinity'])('rejects %j as not an amount', (amount) => {
+    const night = nightWith('Alice')
+    expect(addBuyIn(night, idOf(night, 0), amount)).toEqual({ ok: false, error: 'amount-format' })
+  })
+
+  it.each(['0', '0.00'])('rejects a Buy-in of %j', (amount) => {
+    const night = nightWith('Alice')
+    expect(addBuyIn(night, idOf(night, 0), amount)).toEqual({ ok: false, error: 'buy-in-zero' })
+  })
+
+  it('rejects an amount too large to add up exactly', () => {
+    const night = nightWith('Alice')
+    expect(addBuyIn(night, idOf(night, 0), '99999999999999999')).toEqual({ ok: false, error: 'amount-too-large' })
+  })
 
   it('accepts a decimal comma, as phone keyboards in some languages type it', () => {
     const night = buyIns(nightWith('Alice'), 0, '12,5')
@@ -128,7 +135,7 @@ describe('Buy-in amount validation', () => {
   })
 
   it('rejects a Buy-in for a Player who is not in the Night', () => {
-    expect(addBuyIn(nightWith('Alice'), 'nobody', '50').ok).toBe(false)
+    expect(addBuyIn(nightWith('Alice'), 'nobody', '50')).toEqual({ ok: false, error: 'player-missing' })
   })
 })
 
@@ -155,8 +162,8 @@ describe('fixing Buy-ins', () => {
 
   it('rejects editing or deleting a Buy-in that is not in the Night', () => {
     const night = buyIns(nightWith('Alice'), 0, '50')
-    expect(editBuyIn(night, 'missing', '10').ok).toBe(false)
-    expect(deleteBuyIn(night, 'missing').ok).toBe(false)
+    expect(editBuyIn(night, 'missing', '10')).toEqual({ ok: false, error: 'buy-in-missing' })
+    expect(deleteBuyIn(night, 'missing')).toEqual({ ok: false, error: 'buy-in-missing' })
   })
 })
 
@@ -171,7 +178,7 @@ describe('removing Players', () => {
   })
 
   it('rejects removing a Player who is not in the Night', () => {
-    expect(removePlayer(nightWith('Alice'), 'nobody').ok).toBe(false)
+    expect(removePlayer(nightWith('Alice'), 'nobody')).toEqual({ ok: false, error: 'player-missing' })
   })
 })
 
@@ -237,8 +244,8 @@ describe('Cash-outs', () => {
   })
 
   it('rejects a Cash-out for a Player who is not in the Night', () => {
-    expect(setCashOut(nightWith('Alice'), 'nobody', '10').ok).toBe(false)
-    expect(clearCashOut(nightWith('Alice'), 'nobody').ok).toBe(false)
+    expect(setCashOut(nightWith('Alice'), 'nobody', '10')).toEqual({ ok: false, error: 'player-missing' })
+    expect(clearCashOut(nightWith('Alice'), 'nobody')).toEqual({ ok: false, error: 'player-missing' })
   })
 
   it('removes a Player together with their Cash-out', () => {
@@ -384,7 +391,7 @@ describe('the summary', () => {
     night = buyIns(night, 1, '100')
     night = cashOut(night, 0, '150.5')
     night = cashOut(night, 1, '49.5')
-    expect(summary(night)).toBe(
+    expect(summary(night, en.summary)).toBe(
       [
         'Poker Night',
         'Alice: bought in 100, cashed out 150.5, net +50.5',
@@ -406,7 +413,7 @@ describe('the summary', () => {
     night = buyIns(night, 2, '50')
     night = cashOut(night, 0, '120')
     night = cashOut(night, 2, '0')
-    expect(summary(night)).toBe(
+    expect(summary(night, en.summary)).toBe(
       [
         'Poker Night',
         'Alice: bought in 100, cashed out 120, net +20',
@@ -531,7 +538,7 @@ describe('Settlement Transfers', () => {
 describe('the summary with a Settlement', () => {
   it('adds the Transfers once the Settlement is available', () => {
     const night = finishedNight({ Alice: 30, Bob: -10, Carol: -20 })
-    expect(summary(night)).toBe(
+    expect(summary(night, en.summary)).toBe(
       [
         'Poker Night',
         'Alice: bought in 100, cashed out 130, net +30',
@@ -549,10 +556,33 @@ describe('the summary with a Settlement', () => {
   })
 
   it('says nobody pays anyone when every Net result is 0', () => {
-    expect(summary(finishedNight({ Alice: 0 }))).toMatch(/\n\nSettlement:\nNobody owes anything\.$/)
+    expect(summary(finishedNight({ Alice: 0 }), en.summary)).toMatch(/\n\nSettlement:\nNobody owes anything\.$/)
   })
 
   it('leaves the Settlement out while it is not available', () => {
-    expect(summary(finishedNight({ Alice: 30, Bob: -20 }))).not.toContain('Settlement')
+    expect(summary(finishedNight({ Alice: 30, Bob: -20 }), en.summary)).not.toContain('Settlement')
+  })
+})
+
+describe('the summary in Polish', () => {
+  it('words every line in Polish, with names and amounts as typed', () => {
+    let night = finishedNight({ Alice: 30, Bob: -30 })
+    night = buyIns(ok(addPlayer(night, 'Carol')), 2, '50')
+    expect(summary(night, pl.summary)).toBe(
+      [
+        'Wieczór pokerowy',
+        'Alice: wpisowe 100, wypłata 130, wynik +30',
+        'Bob: wpisowe 100, wypłata 70, wynik -30',
+        'Carol: wpisowe 50, nadal gra',
+        'Suma wpisowego: 250',
+        'Suma wypłat: 200',
+        'Rozbieżność: -50',
+      ].join('\n'),
+    )
+  })
+
+  it('words the Settlement in Polish', () => {
+    expect(summary(finishedNight({ Alice: 20.5, Bob: -20.5 }), pl.summary)).toMatch(/\n\nRozliczenie:\nBob → Alice: 20\.5$/)
+    expect(summary(finishedNight({ Alice: 0 }), pl.summary)).toMatch(/\n\nRozliczenie:\nNikt nikomu nic nie jest winien\.$/)
   })
 })

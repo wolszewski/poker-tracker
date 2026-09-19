@@ -1,14 +1,17 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useText } from './i18n/text'
+import type { Rejection } from './night/night'
+import { RejectionMessage } from './RejectionMessage'
 
 type Props = {
   title: string
   submitLabel: string
   initialAmount?: string
   /** Tries the amount, returning its error, if any. The dialog closes on success and stays open on an error. */
-  onSubmit: (amount: string) => string | undefined
+  onSubmit: (amount: string) => Rejection | undefined
   /** One more button beside Cancel, such as Back to playing. Closes the dialog on success. */
-  extraAction?: { label: string; run: () => string | undefined }
+  extraAction?: { label: string; run: () => Rejection | undefined }
   /** Called once the dialog has closed, however it closed. */
   onClose: () => void
 }
@@ -18,7 +21,8 @@ export function AmountDialog({ title, submitLabel, initialAmount = '', onSubmit,
   const dialog = useRef<HTMLDialogElement>(null)
   const input = useRef<HTMLInputElement>(null)
   const [amount, setAmount] = useState(initialAmount)
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<Rejection>()
+  const t = useText()
   const titleId = useId()
 
   useEffect(() => {
@@ -26,7 +30,7 @@ export function AmountDialog({ title, submitLabel, initialAmount = '', onSubmit,
     input.current?.select()
   }, [])
 
-  const closeUnlessFailed = (failure: string | undefined) => {
+  const closeUnlessFailed = (failure: Rejection | undefined) => {
     setError(failure)
     if (!failure) dialog.current?.close()
   }
@@ -43,14 +47,14 @@ export function AmountDialog({ title, submitLabel, initialAmount = '', onSubmit,
         <h2 id={titleId}>{title}</h2>
         <input
           ref={input}
-          aria-label="Amount"
+          aria-label={t.amount}
           inputMode="decimal"
           enterKeyHint="done"
           autoComplete="off"
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
         />
-        {error && <p className="error">{error}</p>}
+        <RejectionMessage rejection={error} />
         <div className="dialog-actions">
           {extraAction && (
             <button type="button" className="extra" onClick={() => closeUnlessFailed(extraAction.run())}>
@@ -58,7 +62,7 @@ export function AmountDialog({ title, submitLabel, initialAmount = '', onSubmit,
             </button>
           )}
           <button type="button" onClick={() => dialog.current?.close()}>
-            Cancel
+            {t.cancel}
           </button>
           <button type="submit" className="primary">
             {submitLabel}

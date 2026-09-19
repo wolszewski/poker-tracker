@@ -1,10 +1,13 @@
 import { useState } from 'react'
 import type { Apply } from './App'
-import { addPlayer, isNameInNight, type Night } from './night/night'
+import { useText } from './i18n/text'
+import { addPlayer, isNameInNight, type Night, type Rejection } from './night/night'
+import { RejectionMessage } from './RejectionMessage'
 
 export function AddPlayerForm({ night, apply }: { night: Night; apply: Apply }) {
   const [name, setName] = useState('')
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<Rejection>()
+  const t = useText()
 
   return (
     <form
@@ -17,7 +20,7 @@ export function AddPlayerForm({ night, apply }: { night: Night; apply: Apply }) 
       }}
     >
       <label className="field">
-        <span className="label">Player name</span>
+        <span className="label">{t.playerName}</span>
         <input
           value={name}
           onChange={(event) => setName(event.target.value)}
@@ -27,12 +30,12 @@ export function AddPlayerForm({ night, apply }: { night: Night; apply: Apply }) 
         />
       </label>
       <button type="submit" className="primary">
-        Add Player
+        {t.addPlayer}
       </button>
       {isNameInNight(night, name) && (
-        <p className="warning">{name.trim()} is already in the Night. You can still add them again.</p>
+        <p className="warning">{t.alreadyInNight(name.trim())}</p>
       )}
-      {error && <p className="error">{error}</p>}
+      <RejectionMessage rejection={error} />
     </form>
   )
 }

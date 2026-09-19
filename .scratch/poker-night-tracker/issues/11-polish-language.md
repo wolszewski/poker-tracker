@@ -30,14 +30,32 @@ Polish words to use for the glossary terms (see `CONTEXT.md`), so the Polish tex
 
 **Blocked by:** None
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Two flag buttons show in the top right corner in both layouts. Clicking one switches all visible text to that language at once, with no reload, and the Night is unchanged.
-- [ ] The selected flag is marked visually and with `aria-pressed`. Each button has an accessible name.
-- [ ] In Polish, no English text is left: heading, buttons, labels, hints, dialogs, confirm prompts, statuses, totals, the Settlement panel and validation messages.
-- [ ] Copy summary produces Polish text when Polish is selected.
-- [ ] On a first visit, the language follows the browser (`pl*` gives Polish, anything else gives English). After a choice, a reload keeps it. New Night doesn't reset it.
-- [ ] `<html lang>` matches the chosen language.
-- [ ] A key missing from the Polish dictionary is a type error.
-- [ ] The flags fit at phone width (390px) without pushing the heading onto two lines, and the page doesn't scroll sideways.
-- [ ] Night module tests still pass, and the Night rules are unchanged.
+- [x] Two flag buttons show in the top right corner in both layouts. Clicking one switches all visible text to that language at once, with no reload, and the Night is unchanged.
+- [x] The selected flag is marked visually and with `aria-pressed`. Each button has an accessible name.
+- [x] In Polish, no English text is left: heading, buttons, labels, hints, dialogs, confirm prompts, statuses, totals, the Settlement panel and validation messages.
+- [x] Copy summary produces Polish text when Polish is selected.
+- [x] On a first visit, the language follows the browser (`pl*` gives Polish, anything else gives English). After a choice, a reload keeps it. New Night doesn't reset it.
+- [x] `<html lang>` matches the chosen language.
+- [x] A key missing from the Polish dictionary is a type error.
+- [x] The flags fit at phone width (390px) without pushing the heading onto two lines, and the page doesn't scroll sideways.
+- [x] Night module tests still pass, and the Night rules are unchanged.
+
+## Comments
+
+- The Night module returns a `Rejection` code (`name-required`, `amount-format`, `amount-too-large`, `buy-in-zero`, `player-missing`, `buy-in-missing`) instead of English text. `summary` and `describeTransfer` take a `SummaryWords` argument. Both are worded in `src/i18n/en.ts` and `src/i18n/pl.ts`, and `pl` is typed as `Dictionary = typeof en`, so a missing Polish key fails `tsc`. Components read the wording through `useText()` (React context, `src/i18n/text.ts`).
+- `pickLanguage` in `src/i18n/language.ts` is pure and tested: a saved choice wins, else the browser's first language decides (`pl*` gives Polish). The choice is saved under `poker-tracker/language`, apart from the Night.
+- The flags are inline SVGs in `src/LanguageSwitcher.tsx`. Each is named in its own language ("English", "Polski"), and the group is labelled in the current one. The tab title follows the language too.
+- Wording choices beyond the glossary table:
+  - Polish Transfers read "Bob → Alice: 20". "Bob płaci Alice" would need the dative "Alicji", and the app can't decline names.
+  - The Cash-out button is "Wpisz wypłatę", because "Wypłać" reads as if the app pays someone.
+  - Polish keeps glossary terms lowercase, since Polish doesn't capitalise common nouns.
+- `index.html` still says `lang="en"` until the app renders, and then it's set from the choice.
+- Checked by hand in headless Firefox (puppeteer script):
+  - A first visit with a `pl-PL` browser opens in Polish, and one with `en-US` opens in English.
+  - At 390 × 844 (cards) and 1280 × 800 (grid), with 3 Players, the flags switch all text with no reload. `aria-pressed` and `<html lang>` update.
+  - No English words are left in the Polish page. The dialog's validation error, the duplicate-name warning, the confirm prompt and the Copy summary are in Polish.
+  - A reload and New Night both keep Polish.
+  - The heading stays on one line, and the page doesn't scroll sideways.
+  - At 1104px (the grid breakpoint), a 7-Player Night with one Player on 4 Buy-ins fits in both languages.

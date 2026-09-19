@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { Apply } from './App'
-import { deleteBuyIn, editBuyIn, formatAmount, type BuyIn } from './night/night'
+import { useText } from './i18n/text'
+import { deleteBuyIn, editBuyIn, formatAmount, type BuyIn, type Rejection } from './night/night'
+import { RejectionMessage } from './RejectionMessage'
 
 type Props = { buyIn: BuyIn; apply: Apply; as?: 'li' | 'td' }
 
@@ -8,7 +10,8 @@ type Props = { buyIn: BuyIn; apply: Apply; as?: 'li' | 'td' }
 export function BuyInItem({ buyIn, apply, as: Item = 'li' }: Props) {
   const [editing, setEditing] = useState(false)
   const [amount, setAmount] = useState('')
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<Rejection>()
+  const t = useText()
 
   if (!editing) {
     return (
@@ -16,7 +19,7 @@ export function BuyInItem({ buyIn, apply, as: Item = 'li' }: Props) {
         <button
           type="button"
           className="chip"
-          aria-label={`Change Buy-in of ${formatAmount(buyIn.amount)}`}
+          aria-label={t.changeBuyIn(formatAmount(buyIn.amount))}
           onClick={() => {
             setAmount(formatAmount(buyIn.amount))
             setError(undefined)
@@ -41,23 +44,23 @@ export function BuyInItem({ buyIn, apply, as: Item = 'li' }: Props) {
         }}
       >
         <input
-          aria-label="Buy-in amount"
+          aria-label={t.buyInAmount}
           inputMode="decimal"
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
           autoFocus
         />
         <button type="submit" className="small primary">
-          Save
+          {t.save}
         </button>
         <button type="button" className="small danger" onClick={() => apply((night) => deleteBuyIn(night, buyIn.id))}>
-          Delete
+          {t.delete}
         </button>
         <button type="button" className="small" onClick={() => setEditing(false)}>
-          Cancel
+          {t.cancel}
         </button>
       </form>
-      {error && <p className="error">{error}</p>}
+      <RejectionMessage rejection={error} />
     </Item>
   )
 }

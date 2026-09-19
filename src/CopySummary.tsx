@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useText } from './i18n/text'
 import { summary, type Night } from './night/night'
 
 type Status = { kind: 'idle' } | { kind: 'copied' } | { kind: 'failed'; text: string }
 
 export function CopySummary({ night }: { night: Night }) {
   const [status, setStatus] = useState<Status>({ kind: 'idle' })
+  const t = useText()
 
   useEffect(() => {
     if (status.kind !== 'copied') return
@@ -13,7 +15,7 @@ export function CopySummary({ night }: { night: Night }) {
   }, [status])
 
   const copy = async () => {
-    const text = summary(night)
+    const text = summary(night, t.summary)
     try {
       await navigator.clipboard.writeText(text)
       setStatus({ kind: 'copied' })
@@ -25,11 +27,11 @@ export function CopySummary({ night }: { night: Night }) {
   return (
     <>
       <button type="button" className="primary" onClick={copy}>
-        {status.kind === 'copied' ? 'Copied!' : 'Copy summary'}
+        {status.kind === 'copied' ? t.copied : t.copySummary}
       </button>
       {status.kind === 'failed' && (
         <div className="copy-fallback">
-          <p className="warning">Couldn't copy automatically. Select the text below and copy it.</p>
+          <p className="warning">{t.copyFailed}</p>
           <textarea readOnly value={status.text} rows={status.text.split('\n').length} onFocus={(e) => e.target.select()} />
         </div>
       )}

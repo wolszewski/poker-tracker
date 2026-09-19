@@ -3,14 +3,17 @@
 import { useState } from 'react'
 import { AmountDialog } from './AmountDialog'
 import type { Apply } from './App'
-import { addBuyIn, removePlayer, type Player } from './night/night'
+import { useText } from './i18n/text'
+import { addBuyIn, removePlayer, type Player, type Rejection } from './night/night'
+import { RejectionMessage } from './RejectionMessage'
 
 type Props = { player: Player; apply: Apply }
 
 /** Quick-add 50 and 100, and an Other… button that asks for any other amount in a dialog. */
 export function AddBuyIn({ player, apply }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<Rejection>()
+  const t = useText()
 
   const buyIn = (amount: string) => apply((n) => addBuyIn(n, player.id, amount))
 
@@ -29,13 +32,13 @@ export function AddBuyIn({ player, apply }: Props) {
           setDialogOpen(true)
         }}
       >
-        Other…
+        {t.otherBuyIn}
       </button>
-      {error && <p className="error">{error}</p>}
+      <RejectionMessage rejection={error} />
       {dialogOpen && (
         <AmountDialog
-          title={`Add Buy-in for ${player.name}`}
-          submitLabel="Add"
+          title={t.addBuyInFor(player.name)}
+          submitLabel={t.add}
           onSubmit={buyIn}
           onClose={() => setDialogOpen(false)}
         />
@@ -45,21 +48,23 @@ export function AddBuyIn({ player, apply }: Props) {
 }
 
 export function RemovePlayerButton({ player, apply }: Props) {
+  const t = useText()
   return (
     <button
       type="button"
       className="small danger"
       onClick={() => {
-        if (window.confirm(`Remove ${player.name} and all their Buy-ins and Cash-out?`)) {
+        if (window.confirm(t.confirmRemove(player.name))) {
           apply((n) => removePlayer(n, player.id))
         }
       }}
     >
-      Remove
+      {t.remove}
     </button>
   )
 }
 
 export function PlayerStatus({ finished }: { finished: boolean }) {
-  return <span className={`status ${finished ? 'done' : ''}`}>{finished ? 'Finished' : 'Playing'}</span>
+  const t = useText()
+  return <span className={`status ${finished ? 'done' : ''}`}>{finished ? t.finished : t.playing}</span>
 }

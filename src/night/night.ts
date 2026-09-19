@@ -24,18 +24,27 @@ export type Night = {
   readonly nextId: number
 }
 
+/** Why the Night module turned a change down. The UI words it in the Host's language. */
+export type Rejection =
+  | 'name-required'
+  | 'amount-format'
+  | 'amount-too-large'
+  | 'buy-in-zero'
+  | 'player-missing'
+  | 'buy-in-missing'
+
 /** The result of a change: the new Night, or why the change was rejected. */
-export type Change = { ok: true; night: Night } | { ok: false; error: string }
+export type Change = { ok: true; night: Night } | { ok: false; error: Rejection }
 
 const changed = (night: Night): Change => ({ ok: true, night })
 
 export const emptyNight = (): Night => ({ players: [], nextId: 1 })
 
-const rejected = (error: string): Change => ({ ok: false, error })
+const rejected = (error: Rejection): Change => ({ ok: false, error })
 
 export const addPlayer = (night: Night, name: string): Change => {
   const trimmed = name.trim()
-  if (trimmed === '') return rejected('Enter a name.')
+  if (trimmed === '') return rejected('name-required')
   return changed({
     players: [...night.players, { id: `p${night.nextId}`, name: trimmed, buyIns: [], cashOut: null }],
     nextId: night.nextId + 1,
@@ -50,25 +59,25 @@ export const isNameInNight = (night: Night, name: string): boolean =>
 
 /** Removes a Player together with their Buy-ins and Cash-out. */
 export const removePlayer = (night: Night, playerId: string): Change => {
-  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  if (!findPlayer(night, playerId)) return rejected('player-missing')
   return changed({ ...night, players: night.players.filter((player) => player.id !== playerId) })
 }
 
-type Parsed = { ok: true; amount: Amount } | { ok: false; error: string }
+type Parsed = { ok: true; amount: Amount } | { ok: false; error: Rejection }
 
 /** Reads an amount typed by the Host: 0 or more, with up to 2 decimal places. */
 const parseAmount = (text: string): Parsed => {
   const match = /^(\d+)(?:[.,](\d{1,2}))?$/.exec(text.trim())
-  if (!match) return { ok: false, error: 'Enter an amount like 50 or 301.5, with up to 2 decimal places.' }
+  if (!match) return { ok: false, error: 'amount-format' }
   const [, whole, fraction = ''] = match
   const value = Number(whole) * 100 + Number(fraction.padEnd(2, '0'))
-  if (!Number.isSafeInteger(value)) return { ok: false, error: 'That amount is too large.' }
+  if (!Number.isSafeInteger(value)) return { ok: false, error: 'amount-too-large' }
   return { ok: true, amount: cents(value) }
 }
 
 const parseBuyIn = (text: string): Parsed => {
   const parsed = parseAmount(text)
-  if (parsed.ok && parsed.amount === 0) return { ok: false, error: 'A Buy-in must be more than 0.' }
+  if (parsed.ok && parsed.amount === 0) return { ok: false, error: 'buy-in-zero' }
   return parsed
 }
 
@@ -82,7 +91,7 @@ const updatePlayer = (night: Night, playerId: string, update: (player: Player) =
   night.players.map((player) => (player.id === playerId ? update(player) : player))
 
 export const addBuyIn = (night: Night, playerId: string, amountText: string): Change => {
-  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  if (!findPlayer(night, playerId)) return rejected('player-missing')
   const parsed = parseBuyIn(amountText)
   if (!parsed.ok) return rejected(parsed.error)
   return changed({
@@ -103,7 +112,7 @@ const updateBuyIns = (night: Night, update: (buyIns: readonly BuyIn[]) => readon
 })
 
 export const editBuyIn = (night: Night, buyInId: string, amountText: string): Change => {
-  if (!hasBuyIn(night, buyInId)) return rejected('That Buy-in is not in the Night.')
+  if (!hasBuyIn(night, buyInId)) return rejected('buy-in-missing')
   const parsed = parseBuyIn(amountText)
   if (!parsed.ok) return rejected(parsed.error)
   return changed(
@@ -114,12 +123,12 @@ export const editBuyIn = (night: Night, buyInId: string, amountText: string): Ch
 }
 
 export const deleteBuyIn = (night: Night, buyInId: string): Change => {
-  if (!hasBuyIn(night, buyInId)) return rejected('That Buy-in is not in the Night.')
+  if (!hasBuyIn(night, buyInId)) return rejected('buy-in-missing')
   return changed(updateBuyIns(night, (buyIns) => buyIns.filter((buyIn) => buyIn.id !== buyInId)))
 }
 
 export const setCashOut = (night: Night, playerId: string, amountText: string): Change => {
-  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  if (!findPlayer(night, playerId)) return rejected('player-missing')
   const parsed = parseAmount(amountText)
   if (!parsed.ok) return rejected(parsed.error)
   return changed({
@@ -130,7 +139,7 @@ export const setCashOut = (night: Night, playerId: string, amountText: string): 
 
 /** Clears a Player's Cash-out, putting them back to still playing. */
 export const clearCashOut = (night: Night, playerId: string): Change => {
-  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  if (!findPlayer(night, playerId)) return rejected('player-missing')
   return changed({
     ...night,
     players: updatePlayer(night, playerId, (player) => ({ ...player, cashOut: null })),
@@ -279,33 +288,50 @@ export const settle = (night: Night): Settlement => {
   return { available: true, transfers: groups.flatMap(greedyTransfers) }
 }
 
-const summaryLine = (night: Night, player: Player): string => {
-  const boughtIn = `${player.name}: bought in ${formatAmount(totalBuyIn(night, player.id))}`
+/** How the summary and Transfers are worded, in one language. Names and amounts come in already formatted. */
+export type SummaryWords = {
+  readonly title: string
+  readonly stillPlaying: (name: string, boughtIn: string) => string
+  readonly finished: (name: string, boughtIn: string, cashOut: string, net: string) => string
+  readonly totalBuyIns: (amount: string) => string
+  readonly totalCashOuts: (amount: string) => string
+  readonly discrepancy: (amount: string) => string
+  readonly settlement: string
+  readonly nobodyOwes: string
+  readonly transfer: (from: string, to: string, amount: string) => string
+}
+
+const summaryLine = (night: Night, player: Player, words: SummaryWords): string => {
+  const boughtIn = formatAmount(totalBuyIn(night, player.id))
   const net = netResult(night, player.id)
-  if (player.cashOut == null || net === undefined) return `${boughtIn}, still playing`
-  return `${boughtIn}, cashed out ${formatAmount(player.cashOut)}, net ${formatSigned(net)}`
+  if (player.cashOut == null || net === undefined) return words.stillPlaying(player.name, boughtIn)
+  return words.finished(player.name, boughtIn, formatAmount(player.cashOut), formatSigned(net))
 }
 
 /** Describes a Transfer for people, for example "Bob pays Alice 20". */
-export const describeTransfer = (night: Night, transfer: Transfer): string =>
-  `${findPlayer(night, transfer.from)?.name} pays ${findPlayer(night, transfer.to)?.name} ${formatAmount(transfer.amount)}`
+export const describeTransfer = (night: Night, transfer: Transfer, words: SummaryWords): string =>
+  words.transfer(
+    findPlayer(night, transfer.from)?.name ?? '',
+    findPlayer(night, transfer.to)?.name ?? '',
+    formatAmount(transfer.amount),
+  )
 
-const settlementLines = (night: Night): string[] => {
+const settlementLines = (night: Night, words: SummaryWords): string[] => {
   const settlement = settle(night)
   if (night.players.length === 0 || !settlement.available) return []
-  const transfers = settlement.transfers.map((transfer) => describeTransfer(night, transfer))
-  return ['', 'Settlement:', ...(transfers.length > 0 ? transfers : ['Nobody owes anything.'])]
+  const transfers = settlement.transfers.map((transfer) => describeTransfer(night, transfer, words))
+  return ['', words.settlement, ...(transfers.length > 0 ? transfers : [words.nobodyOwes])]
 }
 
 /** The plain-text summary of the Night that the Host pastes into the group chat. */
-export const summary = (night: Night): string =>
+export const summary = (night: Night, words: SummaryWords): string =>
   [
-    'Poker Night',
-    ...night.players.map((player) => summaryLine(night, player)),
-    `Total buy-ins: ${formatAmount(totalBuyIns(night))}`,
-    `Total cash-outs: ${formatAmount(totalCashOuts(night))}`,
-    `Discrepancy: ${formatSigned(discrepancy(night))}`,
-    ...settlementLines(night),
+    words.title,
+    ...night.players.map((player) => summaryLine(night, player, words)),
+    words.totalBuyIns(formatAmount(totalBuyIns(night))),
+    words.totalCashOuts(formatAmount(totalCashOuts(night))),
+    words.discrepancy(formatSigned(discrepancy(night))),
+    ...settlementLines(night, words),
   ].join('\n')
 
 // Saving: a Night as a string, with a format version so the format can change later.

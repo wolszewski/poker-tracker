@@ -1,6 +1,7 @@
 import type { Apply } from './App'
 import { BuyInItem } from './BuyInItem'
 import { CashOut } from './CashOut'
+import { useText } from './i18n/text'
 import { formatAmount, formatSigned, isFinished, netResult, totalBuyIn, type Night, type Player } from './night/night'
 import { AddBuyIn, PlayerStatus, RemovePlayerButton } from './PlayerParts'
 
@@ -8,6 +9,7 @@ type Props = { night: Night; apply: Apply }
 
 /** The Players as a table, one row per Player, for laptop-sized screens. */
 export function PlayerGrid({ night, apply }: Props) {
+  const t = useText()
   const buyInColumns = Math.max(1, ...night.players.map((p) => p.buyIns.length))
 
   return (
@@ -16,22 +18,22 @@ export function PlayerGrid({ night, apply }: Props) {
         <thead>
           <tr>
             <th scope="col" className="name">
-              Player
+              {t.player}
             </th>
             <th scope="colgroup" colSpan={buyInColumns}>
-              Buy-ins
+              {t.buyIns}
             </th>
             <th scope="col" className="amount">
-              Total buy-in
+              {t.totalBuyIn}
             </th>
             <th scope="col" className="amount">
-              Cash-out
+              {t.cashOut}
             </th>
             <th scope="col" className="amount">
-              Net result
+              {t.netResult}
             </th>
             <th scope="col" className="row-actions">
-              Actions
+              {t.actions}
             </th>
           </tr>
         </thead>
