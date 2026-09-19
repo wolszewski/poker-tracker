@@ -218,11 +218,24 @@ button.small {
   gap: 0.35rem;
 }
 
-.buy-ins > li {
-  padding: 0.2rem 0.6rem;
-  border: 1px solid var(--border);
+.chip {
+  min-height: 2.25rem;
+  padding: 0.2rem 0.75rem;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
+}
+
+.buy-in-editor {
+  flex-basis: 100%;
+}
+
+.buy-in-editor .inline-form {
+  flex-wrap: wrap;
+}
+
+.buy-in-editor input {
+  flex: 1 1 6rem;
+  min-height: 2.25rem;
 }
 
 .total {

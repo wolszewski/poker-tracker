@@ -40,7 +40,19 @@ export const addPlayer = (night: Night, name: string): Change => {
   })
 }
 
-type Parsed = { ok: true; amount: Amount } | { ok: false; error: string }
+const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase()
+
+/** Whether a Player with this name is already in the Night. Duplicates are allowed, but worth a warning. */
+export const isNameInNight = (night: Night, name: string): boolean =>
+  night.players.some((player) => sameName(player.name, name))
+
+/** Removes a Player together with their Buy-ins and Cash-out. */
+export const removePlayer = (night: Night, playerId: string): Change => {
+  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  return changed({ ...night, players: night.players.filter((player) => player.id !== playerId) })
+}
+
+type Parsed ={ ok: true; amount: Amount } | { ok: false; error: string }
 
 /** Reads an amount typed by the Host: 0 or more, with up to 2 decimal places. */
 const parseAmount = (text: string): Parsed => {
@@ -80,7 +92,31 @@ export const addBuyIn = (night: Night, playerId: string, amountText: string): Ch
   })
 }
 
-export const totalBuyIn = (night: Night, playerId: string): Amount =>
+const hasBuyIn = (night: Night, buyInId: string) =>
+  night.players.some((player) => player.buyIns.some((buyIn) => buyIn.id === buyInId))
+
+const updateBuyIns = (night: Night, update: (buyIns: readonly BuyIn[]) => readonly BuyIn[]): Night => ({
+  ...night,
+  players: night.players.map((player) => ({ ...player, buyIns: update(player.buyIns) })),
+})
+
+export const editBuyIn = (night: Night, buyInId: string, amountText: string): Change => {
+  if (!hasBuyIn(night, buyInId)) return rejected('That Buy-in is not in the Night.')
+  const parsed = parseBuyIn(amountText)
+  if (!parsed.ok) return rejected(parsed.error)
+  return changed(
+    updateBuyIns(night, (buyIns) =>
+      buyIns.map((buyIn) => (buyIn.id === buyInId ? { ...buyIn, amount: parsed.amount } : buyIn)),
+    ),
+  )
+}
+
+export const deleteBuyIn = (night: Night, buyInId: string): Change => {
+  if (!hasBuyIn(night, buyInId)) return rejected('That Buy-in is not in the Night.')
+  return changed(updateBuyIns(night, (buyIns) => buyIns.filter((buyIn) => buyIn.id !== buyInId)))
+}
+
+export const totalBuyIn =(night: Night, playerId: string): Amount =>
   sum(findPlayer(night, playerId)?.buyIns.map((buyIn) => buyIn.amount) ?? [])
 
 export const totalBuyIns = (night: Night): Amount =>

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { Apply } from './App'
-import { addPlayer, type Night } from './night/night'
+import { addPlayer, isNameInNight, type Night } from './night/night'
 
-export function AddPlayerForm({ apply }: { night: Night; apply: Apply }) {
+export function AddPlayerForm({ night, apply }: { night: Night; apply: Apply }) {
   const [name, setName] = useState('')
   const [error, setError] = useState<string>()
 
@@ -29,6 +29,9 @@ export function AddPlayerForm({ apply }: { night: Night; apply: Apply }) {
       <button type="submit" className="primary">
         Add Player
       </button>
+      {isNameInNight(night, name) && (
+        <p className="warning">{name.trim()} is already in the Night. You can still add them again.</p>
+      )}
       {error && <p className="error">{error}</p>}
     </form>
   )

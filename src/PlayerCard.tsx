@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Apply } from './App'
-import { addBuyIn, formatAmount, totalBuyIn, type Night, type Player } from './night/night'
+import { BuyInItem } from './BuyInItem'
+import { addBuyIn, formatAmount, removePlayer, totalBuyIn, type Night, type Player } from './night/night'
 
 type Props = { night: Night; player: Player; apply: Apply }
 
@@ -18,6 +19,17 @@ export function PlayerCard({ night, player, apply }: Props) {
     <li className="card">
       <header className="card-header">
         <h2>{player.name}</h2>
+        <button
+          type="button"
+          className="small danger"
+          onClick={() => {
+            if (window.confirm(`Remove ${player.name} and all their Buy-ins and Cash-out?`)) {
+              apply((n) => removePlayer(n, player.id))
+            }
+          }}
+        >
+          Remove
+        </button>
       </header>
 
       <div className="section">
@@ -27,7 +39,7 @@ export function PlayerCard({ night, player, apply }: Props) {
         ) : (
           <ul className="buy-ins">
             {player.buyIns.map((b) => (
-              <li key={b.id}>{formatAmount(b.amount)}</li>
+              <BuyInItem key={b.id} buyIn={b} apply={apply} />
             ))}
           </ul>
         )}
