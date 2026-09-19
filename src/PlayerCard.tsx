@@ -19,19 +19,18 @@ export function PlayerCard({ night, player, apply }: Props) {
         <RemovePlayerButton player={player} apply={apply} />
       </header>
 
-      <div className="section">
-        <span className="label">{t.buyIns}</span>
+      <div className="section buy-in-row">
         {player.buyIns.length === 0 ? (
           <p className="hint">{t.noBuyIns}</p>
         ) : (
-          <ul className="buy-ins">
+          <ul className="buy-ins" aria-label={t.buyIns}>
             {player.buyIns.map((b) => (
               <BuyInItem key={b.id} buyIn={b} apply={apply} />
             ))}
           </ul>
         )}
         <p className="total">
-          {t.totalBuyIn} <strong>{formatAmount(totalBuyIn(night, player.id))}</strong>
+          {t.total}: <strong>{formatAmount(totalBuyIn(night, player.id))}</strong>
         </p>
       </div>
 

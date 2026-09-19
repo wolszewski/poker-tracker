@@ -29,6 +29,7 @@ export const pl: Dictionary = {
   buyIns: 'Wpisowe',
   noBuyIns: 'Jeszcze brak.',
   totalBuyIn: 'Suma wpisowego',
+  total: 'Suma',
   otherBuyIn: 'Inne…',
   addBuyInFor: (name) => `Dodaj wpisowe: ${name}`,
   changeBuyIn: (amount) => `Zmień wpisowe ${amount}`,

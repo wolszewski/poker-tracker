@@ -50,6 +50,7 @@ export const en = {
   buyIns: 'Buy-ins',
   noBuyIns: 'None yet.',
   totalBuyIn: 'Total buy-in',
+  total: 'Total',
   otherBuyIn: 'Other…',
   addBuyInFor: (name: string) => `Add Buy-in for ${name}`,
   changeBuyIn: (amount: string) => `Change Buy-in of ${amount}`,

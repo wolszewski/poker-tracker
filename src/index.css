@@ -277,8 +277,22 @@ button.small {
   min-height: 2.25rem;
 }
 
+.buy-in-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.buy-in-row > .buy-ins,
+.buy-in-row > .hint {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
 .total {
-  margin: 0.25rem 0 0;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .add-buy-in {
