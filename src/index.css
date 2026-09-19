@@ -87,3 +87,156 @@ h1 {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+
+h2 {
+  font-size: 1.15rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+input,
+button {
+  font: inherit;
+  color: inherit;
+}
+
+input {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+button {
+  min-height: 2.75rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+button.danger {
+  color: var(--loss);
+}
+
+button.small {
+  min-height: 2.25rem;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.add-player {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.add-player .error,
+.add-player .warning {
+  flex-basis: 100%;
+}
+
+.error {
+  margin: 0.5rem 0 0;
+  color: var(--loss);
+  font-size: 0.9rem;
+}
+
+.warning {
+  margin: 0.5rem 0 0;
+  padding: 0.4rem 0.6rem;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.players {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.card {
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-header h2 {
+  flex: 1;
+  min-width: 0;
+}
+
+.section {
+  margin-bottom: 0.75rem;
+}
+
+.buy-ins {
+  list-style: none;
+  margin: 0.25rem 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.buy-ins > li {
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.total {
+  margin: 0.25rem 0 0;
+}
+
+.quick-buy-ins {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.inline-form {
+  display: flex;
+  gap: 0.5rem;
+}
