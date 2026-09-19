@@ -1,0 +1,3 @@
+# Nights are stored only in the browser, with no sync
+
+The Host uses the app from both a laptop and a phone, but a Night is saved only in the browser it was started in and is never synced between devices. We chose this over a free hosted database so the app stays a purely static site: nothing runs on a server, there are no accounts, and nobody else who opens the public GitHub Pages URL can see or change a Night. The cost is that a Night can't move from one device to another partway through. Adding sync later means adding a backend and access control, so treat it as a new decision, not a missing feature.
