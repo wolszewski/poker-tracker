@@ -1,0 +1,89 @@
+:root {
+  --bg: #f6f7f5;
+  --surface: #ffffff;
+  --text: #1c1f1d;
+  --muted: #5e6660;
+  --border: #d9ddd9;
+  --accent: #1f6f4a;
+  --accent-text: #ffffff;
+  --win: #1f7a3d;
+  --loss: #b3261e;
+  --warn-bg: #fff3cd;
+  --warn-text: #6b4e00;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121412;
+    --surface: #1d201e;
+    --text: #e8ebe8;
+    --muted: #9aa39c;
+    --border: #343a36;
+    --accent: #3fae78;
+    --accent-text: #0b1a12;
+    --win: #5fd28a;
+    --loss: #ff8a80;
+    --warn-bg: #3d3210;
+    --warn-text: #ffd97a;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+}
+
+.app {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem 1rem 4rem;
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.totals {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.totals > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.totals .label {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.totals .value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
