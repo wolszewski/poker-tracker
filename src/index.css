@@ -425,6 +425,18 @@ button.small {
   font-variant-numeric: tabular-nums;
 }
 
+/* Landscape phones and small tablets: still cards, two per row. The laptop query below takes over from 69rem. */
+@media (min-width: 50rem) {
+  .app {
+    max-width: 64rem;
+  }
+
+  .players {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
 /* Laptop widths: the Players show as a grid (PlayerGrid). Keep the breakpoint in step with LAPTOP in App.tsx. */
 @media (min-width: 69rem) {
   .app {
