@@ -2,7 +2,7 @@ import type { Apply } from './App'
 import { BuyInItem } from './BuyInItem'
 import { CashOut } from './CashOut'
 import { formatAmount, formatSigned, isFinished, netResult, totalBuyIn, type Night, type Player } from './night/night'
-import { AddBuyInForm, PlayerStatus, RemovePlayerButton } from './PlayerParts'
+import { AddBuyIn, PlayerStatus, RemovePlayerButton } from './PlayerParts'
 
 type Props = { night: Night; apply: Apply }
 
@@ -71,7 +71,7 @@ function PlayerRow({ night, player, apply, buyInColumns }: Props & { player: Pla
       </td>
       <td className="row-actions">
         <div className="row-actions-inner">
-          <AddBuyInForm player={player} apply={apply} compact />
+          <AddBuyIn player={player} apply={apply} />
           <CashOut night={night} player={player} apply={apply} showResult={false} />
           <RemovePlayerButton player={player} apply={apply} />
         </div>

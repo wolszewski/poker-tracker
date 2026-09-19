@@ -246,11 +246,14 @@ button.small {
   margin: 0.25rem 0 0;
 }
 
-.quick-buy-ins {
+.add-buy-in {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.5rem;
-  margin-bottom: 0.5rem;
+}
+
+.add-buy-in .error {
+  grid-column: 1 / -1;
 }
 
 .inline-form {
@@ -305,6 +308,10 @@ button.small {
   border-top: 1px solid var(--border);
 }
 
+.cash-out > button {
+  width: 100%;
+}
+
 .cash-out .result {
   display: flex;
   flex-wrap: wrap;
@@ -323,12 +330,6 @@ button.small {
 
 .net.loss {
   color: var(--loss);
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
 .night-actions {
@@ -380,7 +381,7 @@ button.small {
 }
 
 /* Laptop widths: the Players show as a grid (PlayerGrid). Keep the breakpoint in step with LAPTOP in App.tsx. */
-@media (min-width: 78rem) {
+@media (min-width: 68rem) {
   .app {
     max-width: 80rem;
   }
@@ -505,19 +506,8 @@ button.small {
 }
 
 .player-grid .add-buy-in {
-  display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: repeat(3, auto);
   gap: 0.4rem;
-}
-
-.player-grid .add-buy-in .error {
-  grid-column: 1 / -1;
-}
-
-.player-grid .quick-buy-ins {
-  display: flex;
-  gap: 0.4rem;
-  margin: 0;
 }
 
 .player-grid .inline-form {
@@ -530,7 +520,35 @@ button.small {
   border: 0;
 }
 
-.player-grid .cash-out .actions {
-  flex-wrap: nowrap;
-  gap: 0.4rem;
+.player-grid .cash-out > button {
+  width: auto;
+}
+
+/* Rendered in a portal on body, so none of the grid or card styles reach it. */
+.amount-dialog {
+  width: min(22rem, calc(100vw - 2rem));
+  padding: 1rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.amount-dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}
+
+.amount-dialog h2 {
+  margin-bottom: 0.75rem;
+}
+
+.dialog-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.dialog-actions .extra {
+  grid-column: 1 / -1;
 }

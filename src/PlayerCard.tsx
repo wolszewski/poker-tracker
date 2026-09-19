@@ -2,7 +2,7 @@ import type { Apply } from './App'
 import { BuyInItem } from './BuyInItem'
 import { CashOut } from './CashOut'
 import { formatAmount, isFinished, totalBuyIn, type Night, type Player } from './night/night'
-import { AddBuyInForm, PlayerStatus, RemovePlayerButton } from './PlayerParts'
+import { AddBuyIn, PlayerStatus, RemovePlayerButton } from './PlayerParts'
 
 type Props = { night: Night; player: Player; apply: Apply }
 
@@ -33,7 +33,7 @@ export function PlayerCard({ night, player, apply }: Props) {
         </p>
       </div>
 
-      <AddBuyInForm player={player} apply={apply} />
+      <AddBuyIn player={player} apply={apply} />
 
       <CashOut night={night} player={player} apply={apply} />
     </li>

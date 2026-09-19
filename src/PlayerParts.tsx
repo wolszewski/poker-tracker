@@ -1,49 +1,45 @@
 // Pieces of a Player shared by the phone cards (PlayerCard) and the laptop grid (PlayerGrid).
 
 import { useState } from 'react'
+import { AmountDialog } from './AmountDialog'
 import type { Apply } from './App'
 import { addBuyIn, removePlayer, type Player } from './night/night'
 
 type Props = { player: Player; apply: Apply }
 
-/** Quick-add 50 and 100, and a custom-amount Buy-in, with the error from the last attempt. `compact` shortens the labels for the grid. */
-export function AddBuyInForm({ player, apply, compact = false }: Props & { compact?: boolean }) {
-  const [customAmount, setCustomAmount] = useState('')
+/** Quick-add 50 and 100, and an Add button that asks for any other amount in a dialog. */
+export function AddBuyIn({ player, apply }: Props) {
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [error, setError] = useState<string>()
 
-  const buyIn = (amount: string) => {
-    const failure = apply((n) => addBuyIn(n, player.id, amount))
-    setError(failure)
-    return !failure
-  }
+  const buyIn = (amount: string) => apply((n) => addBuyIn(n, player.id, amount))
 
   return (
     <div className="add-buy-in">
-      <div className="quick-buy-ins">
-        <button type="button" className="primary" onClick={() => buyIn('50')}>
-          +50
-        </button>
-        <button type="button" onClick={() => buyIn('100')}>
-          +100
-        </button>
-      </div>
-      <form
-        className="inline-form"
-        onSubmit={(event) => {
-          event.preventDefault()
-          if (buyIn(customAmount)) setCustomAmount('')
+      <button type="button" className="primary" onClick={() => setError(buyIn('50'))}>
+        +50
+      </button>
+      <button type="button" onClick={() => setError(buyIn('100'))}>
+        +100
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setError(undefined)
+          setDialogOpen(true)
         }}
       >
-        <input
-          aria-label={`Other Buy-in amount for ${player.name}`}
-          placeholder={compact ? 'Buy-in' : 'Other amount'}
-          inputMode="decimal"
-          value={customAmount}
-          onChange={(event) => setCustomAmount(event.target.value)}
-        />
-        <button type="submit">{compact ? 'Add' : 'Add Buy-in'}</button>
-      </form>
+        Add
+      </button>
       {error && <p className="error">{error}</p>}
+      {dialogOpen && (
+        <AmountDialog
+          title={`Add Buy-in for ${player.name}`}
+          submitLabel="Add"
+          onSubmit={buyIn}
+          onClose={() => setDialogOpen(false)}
+        />
+      )}
     </div>
   )
 }

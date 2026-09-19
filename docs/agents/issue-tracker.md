@@ -10,6 +10,7 @@ Issues and specs for this repo live as markdown files in `.scratch/`.
 - Triage state is recorded as a `Status:` line near the top of each issue file (see `triage-labels.md` for the role strings)
 - Comments and conversation history append to the bottom of the file under a `## Comments` heading
 - When a ticket is implemented, set `Status: done`, tick each acceptance-criteria box that was verified (leave unverified ones unticked and say why under `## Comments`), and include the ticket file in the implementing commit
+- Every commit that works on one or more tickets starts its subject line with their numbers, then the description, e.g. `#10 Enter amounts in a dialog` or `#03 #04 Fix Buy-in totals`
 
 ## When a skill says "publish to the issue tracker"
 
