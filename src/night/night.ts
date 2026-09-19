@@ -175,3 +175,55 @@ export const formatAmount = (amount: Amount): string => {
 /** Like formatAmount, with a + on positive amounts, as used for Net results. */
 export const formatSigned = (amount: Amount): string =>
   amount > 0 ? `+${formatAmount(amount)}` : formatAmount(amount)
+
+// Saving: a Night as a string, with a format version so the format can change later.
+
+const SAVE_VERSION = 1
+
+export const saveNight = (night: Night): string => JSON.stringify({ version: SAVE_VERSION, night })
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null
+
+const isCents = (value: unknown, minimum: number): value is Amount =>
+  Number.isSafeInteger(value) && (value as number) >= minimum
+
+const isBuyIn = (value: unknown): value is BuyIn =>
+  isRecord(value) && typeof value.id === 'string' && isCents(value.amount, 1)
+
+const isPlayer = (value: unknown): value is Player =>
+  isRecord(value) &&
+  typeof value.id === 'string' &&
+  typeof value.name === 'string' &&
+  value.name.trim() !== '' &&
+  Array.isArray(value.buyIns) &&
+  value.buyIns.every(isBuyIn) &&
+  (value.cashOut === null || isCents(value.cashOut, 0))
+
+const isNight = (value: unknown): value is Night =>
+  isRecord(value) &&
+  Number.isSafeInteger(value.nextId) &&
+  Array.isArray(value.players) &&
+  value.players.every(isPlayer)
+
+/** Reads a saved Night back. Missing, corrupt or unknown-version data gives an empty Night. */
+export const loadNight = (saved: string | null): Night => {
+  if (!saved) return emptyNight()
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(saved)
+  } catch {
+    return emptyNight()
+  }
+  if (!isRecord(parsed) || parsed.version !== SAVE_VERSION || !isNight(parsed.night)) return emptyNight()
+  const { players, nextId } = parsed.night
+  return {
+    players: players.map(({ id, name, buyIns, cashOut }) => ({
+      id,
+      name,
+      buyIns: buyIns.map(({ id, amount }) => ({ id, amount })),
+      cashOut,
+    })),
+    nextId,
+  }
+}

@@ -329,3 +329,14 @@ button.small {
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+
+.night-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.night-actions > * {
+  flex: 1;
+}

@@ -1,14 +1,17 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AddPlayerForm } from './AddPlayerForm'
-import { emptyNight, type Change, type Night } from './night/night'
+import { emptyNight, loadNight, saveNight, type Change, type Night } from './night/night'
 import { PlayerCard } from './PlayerCard'
+import { readSaved, writeSaved } from './storage'
 import { TotalsBar } from './TotalsBar'
 
 /** Applies a change from the Night module, returning its error, if any, for the form that made it. */
 export type Apply = (change: (night: Night) => Change) => string | undefined
 
 export default function App() {
-  const [night, setNight] = useState(emptyNight)
+  const [night, setNight] = useState(() => loadNight(readSaved()))
+
+  useEffect(() => writeSaved(saveNight(night)), [night])
 
   const apply: Apply = (change) => {
     const result = change(night)
@@ -27,6 +30,20 @@ export default function App() {
         ))}
       </ul>
       <TotalsBar night={night} />
+
+      <div className="night-actions">
+        <button
+          type="button"
+          className="danger"
+          onClick={() => {
+            if (window.confirm('Start a New Night? This clears every Player, Buy-in and Cash-out.')) {
+              setNight(emptyNight())
+            }
+          }}
+        >
+          New Night
+        </button>
+      </div>
     </main>
   )
 }

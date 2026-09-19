@@ -13,8 +13,10 @@ import {
   formatSigned,
   isNameInNight,
   isFinished,
+  loadNight,
   netResult,
   removePlayer,
+  saveNight,
   setCashOut,
   stillPlaying,
   totalBuyIn,
@@ -325,5 +327,50 @@ describe('formatting amounts', () => {
     expect(formatSigned(netResult(night, idOf(night, 0))!)).toBe('+50.5')
     expect(formatSigned(netResult(night, idOf(night, 1))!)).toBe('-50.5')
     expect(formatSigned(netResult(night, idOf(night, 2))!)).toBe('0')
+  })
+})
+
+describe('saving and loading', () => {
+  const fullNight = () => {
+    let night = nightWith('Alice', 'Bob', 'Carol')
+    night = buyIns(night, 0, '50', '100')
+    night = buyIns(night, 1, '301.5')
+    night = cashOut(night, 0, '0')
+    night = cashOut(night, 1, '400')
+    return night
+  }
+
+  it('loads back the same Players, Buy-ins and Cash-outs', () => {
+    const night = fullNight()
+    const loaded = loadNight(saveNight(night))
+    expect(loaded).toEqual(night)
+    expect(formatAmount(totalBuyIns(loaded))).toBe('451.5')
+    expect(stillPlaying(loaded).map((p) => p.name)).toEqual(['Carol'])
+  })
+
+  it('keeps generating new IDs after loading', () => {
+    let night = loadNight(saveNight(fullNight()))
+    night = ok(addPlayer(night, 'Dave'))
+    night = buyIns(night, 3, '50')
+    const ids = night.players.flatMap((p) => [p.id, ...p.buyIns.map((b) => b.id)])
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it.each([
+    ['nothing saved', null],
+    ['an empty string', ''],
+    ['text that is not JSON', '{not json'],
+    ['JSON that is not a Night', '{"version":1,"night":{"players":"lots"}}'],
+    ['a Player with a bad Buy-in', '{"version":1,"night":{"nextId":3,"players":[{"id":"p1","name":"A","buyIns":[{"id":"b2","amount":-5}],"cashOut":null}]}}'],
+    ['an unknown version', '{"version":99,"night":{"nextId":1,"players":[]}}'],
+    ['JSON null', 'null'],
+  ])('starts an empty Night from %s', (_, saved) => {
+    expect(loadNight(saved)).toEqual(emptyNight())
+  })
+
+  it('starts an empty Night when a saved Night from an unknown version would otherwise load', () => {
+    const saved = JSON.parse(saveNight(fullNight()))
+    saved.version = 2
+    expect(loadNight(JSON.stringify(saved))).toEqual(emptyNight())
   })
 })
