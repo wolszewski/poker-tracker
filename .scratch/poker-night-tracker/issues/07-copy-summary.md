@@ -4,9 +4,9 @@
 
 **Blocked by:** 05: Cash-outs, Net results and Discrepancy
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Copy summary puts the summary text on the clipboard and shows a short confirmation.
-- [ ] The summary includes every Player, their Total buy-in, Cash-out (or "still playing") and signed Net result, plus the totals and the Discrepancy.
-- [ ] Amounts in the summary use the same format as the screen, with no currency.
-- [ ] Night module tests check the summary text for a typical Night, including one with a Player still playing and one with a non-zero Discrepancy.
+- [x] Copy summary puts the summary text on the clipboard and shows a short confirmation.
+- [x] The summary includes every Player, their Total buy-in, Cash-out (or "still playing") and signed Net result, plus the totals and the Discrepancy.
+- [x] Amounts in the summary use the same format as the screen, with no currency.
+- [x] Night module tests check the summary text for a typical Night, including one with a Player still playing and one with a non-zero Discrepancy.

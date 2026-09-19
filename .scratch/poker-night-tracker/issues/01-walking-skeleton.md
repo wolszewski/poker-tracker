@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The dev server starts, and the page shows an empty Night with its totals bar at 0.
-- [ ] The layout works at phone width with no horizontal scrolling, and also at laptop width.
-- [ ] The Night module creates an empty Night and has no React or browser dependencies.
-- [ ] The test command runs Vitest, and at least one test through the Night module passes.
-- [ ] Build and type-check pass.
+- [x] The dev server starts, and the page shows an empty Night with its totals bar at 0.
+- [x] The layout works at phone width with no horizontal scrolling, and also at laptop width.
+- [x] The Night module creates an empty Night and has no React or browser dependencies.
+- [x] The test command runs Vitest, and at least one test through the Night module passes.
+- [x] Build and type-check pass.

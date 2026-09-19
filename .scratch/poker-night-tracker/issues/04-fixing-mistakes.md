@@ -4,10 +4,10 @@
 
 **Blocked by:** 03: Players and Buy-ins
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A Buy-in's amount can be edited, with the same validation as adding one.
-- [ ] A Buy-in can be deleted, and all totals update.
-- [ ] A Player can be removed after confirming, and their Buy-ins (and Cash-out, if any) disappear from all totals.
-- [ ] Adding a duplicate name shows a warning but is allowed, and edits and deletes affect only the Player being changed.
-- [ ] Night module tests cover edit, delete, removing a Player together with their data, and duplicate names.
+- [x] A Buy-in's amount can be edited, with the same validation as adding one.
+- [x] A Buy-in can be deleted, and all totals update.
+- [x] A Player can be removed after confirming, and their Buy-ins (and Cash-out, if any) disappear from all totals.
+- [x] Adding a duplicate name shows a warning but is allowed, and edits and deletes affect only the Player being changed.
+- [x] Night module tests cover edit, delete, removing a Player together with their data, and duplicate names.

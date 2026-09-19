@@ -4,13 +4,13 @@
 
 **Blocked by:** 01: Walking skeleton
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The Host can add a Player; an empty name is rejected.
-- [ ] Players can be added at any point in the Night.
-- [ ] A Buy-in can be recorded with one tap for 50 or 100, or for a custom amount.
-- [ ] A Player can have any number of Buy-ins, and they're listed on the Player's card.
-- [ ] The Total buy-in per Player and total Buy-ins for the Night are correct, including decimals (0.1 + 0.2 comes out as exactly 0.3).
-- [ ] Buy-in amounts that are 0, negative, have more than 2 decimal places or aren't numbers are rejected with a visible message.
-- [ ] Players and Buy-ins have generated IDs.
-- [ ] Night module tests cover every rule above.
+- [x] The Host can add a Player; an empty name is rejected.
+- [x] Players can be added at any point in the Night.
+- [x] A Buy-in can be recorded with one tap for 50 or 100, or for a custom amount.
+- [x] A Player can have any number of Buy-ins, and they're listed on the Player's card.
+- [x] The Total buy-in per Player and total Buy-ins for the Night are correct, including decimals (0.1 + 0.2 comes out as exactly 0.3).
+- [x] Buy-in amounts that are 0, negative, have more than 2 decimal places or aren't numbers are rejected with a visible message.
+- [x] Players and Buy-ins have generated IDs.
+- [x] Night module tests cover every rule above.

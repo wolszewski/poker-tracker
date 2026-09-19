@@ -4,13 +4,13 @@
 
 **Blocked by:** 05: Cash-outs, Net results and Discrepancy; 07: Copy summary
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] With every Player finished and the Discrepancy at 0, the panel lists Transfers (from Player, to Player, amount) that bring every Net result to 0.
-- [ ] The number of Transfers is the minimum, including cases where greedy would use more (for example, two Players whose Net results exactly cancel each other out, alongside others).
-- [ ] With Players still playing, or a non-zero Discrepancy, no Transfers are shown, and the reason is.
-- [ ] Players with a Net result of 0 don't appear in any Transfer.
-- [ ] Above 10 Players, the greedy fallback is used and is still correct.
-- [ ] Results are the same for the same Night.
-- [ ] Copy summary includes the Transfers when a Settlement is available.
-- [ ] Night module tests cover all of the above.
+- [x] With every Player finished and the Discrepancy at 0, the panel lists Transfers (from Player, to Player, amount) that bring every Net result to 0.
+- [x] The number of Transfers is the minimum, including cases where greedy would use more (for example, two Players whose Net results exactly cancel each other out, alongside others).
+- [x] With Players still playing, or a non-zero Discrepancy, no Transfers are shown, and the reason is.
+- [x] Players with a Net result of 0 don't appear in any Transfer.
+- [x] Above 10 Players, the greedy fallback is used and is still correct.
+- [x] Results are the same for the same Night.
+- [x] Copy summary includes the Transfers when a Settlement is available.
+- [x] Night module tests cover all of the above.

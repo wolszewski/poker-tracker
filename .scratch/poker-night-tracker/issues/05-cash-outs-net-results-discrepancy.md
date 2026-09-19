@@ -4,11 +4,11 @@
 
 **Blocked by:** 03: Players and Buy-ins
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A Cash-out can be set, edited and cleared; 0 is allowed, while negative amounts, more than 2 decimal places and non-numbers are rejected.
-- [ ] Finished Players are clearly marked and show their Net result with a sign.
-- [ ] Total Cash-outs and the Discrepancy are correct at any point, including when some Players are still playing and when decimals are involved.
-- [ ] The Discrepancy is visible at all times and highlighted when not 0.
-- [ ] The count of Players still playing is shown.
-- [ ] Night module tests cover Cash-outs, Net results, the Discrepancy and the count of Players still playing.
+- [x] A Cash-out can be set, edited and cleared; 0 is allowed, while negative amounts, more than 2 decimal places and non-numbers are rejected.
+- [x] Finished Players are clearly marked and show their Net result with a sign.
+- [x] Total Cash-outs and the Discrepancy are correct at any point, including when some Players are still playing and when decimals are involved.
+- [x] The Discrepancy is visible at all times and highlighted when not 0.
+- [x] The count of Players still playing is shown.
+- [x] Night module tests cover Cash-outs, Net results, the Discrepancy and the count of Players still playing.

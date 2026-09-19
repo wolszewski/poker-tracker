@@ -4,10 +4,10 @@
 
 **Blocked by:** 05: Cash-outs, Net results and Discrepancy
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] After any change, reloading the page restores the same Night: Players, Buy-ins and Cash-outs.
-- [ ] Corrupt or unknown-version saved data starts an empty Night without an error screen.
-- [ ] New Night asks for confirmation and then clears the Night, including what's saved.
-- [ ] Night module tests cover saving and loading a full Night, corrupt data and an unknown version.
-- [ ] The local storage wrapper is a thin adapter with no business logic.
+- [x] After any change, reloading the page restores the same Night: Players, Buy-ins and Cash-outs.
+- [x] Corrupt or unknown-version saved data starts an empty Night without an error screen.
+- [x] New Night asks for confirmation and then clears the Night, including what's saved.
+- [x] Night module tests cover saving and loading a full Night, corrupt data and an unknown version.
+- [x] The local storage wrapper is a thin adapter with no business logic.
