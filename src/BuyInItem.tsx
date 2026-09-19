@@ -2,14 +2,17 @@ import { useState } from 'react'
 import type { Apply } from './App'
 import { deleteBuyIn, editBuyIn, formatAmount, type BuyIn } from './night/night'
 
-export function BuyInItem({ buyIn, apply }: { buyIn: BuyIn; apply: Apply }) {
+type Props = { buyIn: BuyIn; apply: Apply; as?: 'li' | 'td' }
+
+/** One Buy-in, shown as a chip that opens an editor. Renders as a list item in cards, or a table cell in the grid. */
+export function BuyInItem({ buyIn, apply, as: Item = 'li' }: Props) {
   const [editing, setEditing] = useState(false)
   const [amount, setAmount] = useState('')
   const [error, setError] = useState<string>()
 
   if (!editing) {
     return (
-      <li>
+      <Item className="buy-in">
         <button
           type="button"
           className="chip"
@@ -22,12 +25,12 @@ export function BuyInItem({ buyIn, apply }: { buyIn: BuyIn; apply: Apply }) {
         >
           {formatAmount(buyIn.amount)}
         </button>
-      </li>
+      </Item>
     )
   }
 
   return (
-    <li className="buy-in-editor">
+    <Item className="buy-in buy-in-editor">
       <form
         className="inline-form"
         onSubmit={(event) => {
@@ -55,6 +58,6 @@ export function BuyInItem({ buyIn, apply }: { buyIn: BuyIn; apply: Apply }) {
         </button>
       </form>
       {error && <p className="error">{error}</p>}
-    </li>
+    </Item>
   )
 }

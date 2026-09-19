@@ -74,6 +74,7 @@ The Night is saved in the browser it was started in, and survives reloads and cl
 - **UI.** One screen, designed for phones first:
   - A form to add a Player.
   - One card per Player showing their name, Buy-in list (with edit and delete on each), quick-add 50 and 100 buttons, a custom-amount Buy-in, a Cash-out field, their Total buy-in and Net result, a finished marker and a remove button.
+  - On laptop-sized screens (78rem and wider), the same per-Player content shows as a grid instead, one row per Player (ticket 09).
   - A totals bar showing total Buy-ins, total Cash-outs, the Discrepancy (highlighted when not 0) and how many Players have no Cash-out yet.
   - **Copy summary** and **New Night** buttons.
   - A Settlement panel (bonus).

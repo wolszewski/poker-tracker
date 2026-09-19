@@ -2,9 +2,10 @@ import { useState } from 'react'
 import type { Apply } from './App'
 import { clearCashOut, formatAmount, formatSigned, isFinished, netResult, setCashOut, type Night, type Player } from './night/night'
 
-type Props = { night: Night; player: Player; apply: Apply }
+type Props = { night: Night; player: Player; apply: Apply; showResult?: boolean }
 
-export function CashOut({ night, player, apply }: Props) {
+/** Set, change or clear a Player's Cash-out. The grid shows the Cash-out and Net result in their own columns, so it hides them here. */
+export function CashOut({ night, player, apply, showResult = true }: Props) {
   const [editing, setEditing] = useState(false)
   const [amount, setAmount] = useState('')
   const [error, setError] = useState<string>()
@@ -13,14 +14,16 @@ export function CashOut({ night, player, apply }: Props) {
   if (isFinished(night, player.id) && player.cashOut != null && net !== undefined && !editing) {
     return (
       <div className="cash-out">
-        <p className="result">
-          <span>
-            Cash-out <strong>{formatAmount(player.cashOut)}</strong>
-          </span>
-          <span className={`net ${net > 0 ? 'win' : net < 0 ? 'loss' : ''}`}>
-            Net result <strong>{formatSigned(net)}</strong>
-          </span>
-        </p>
+        {showResult && (
+          <p className="result">
+            <span>
+              Cash-out <strong>{formatAmount(player.cashOut)}</strong>
+            </span>
+            <span className={`net ${net > 0 ? 'win' : net < 0 ? 'loss' : ''}`}>
+              Net result <strong>{formatSigned(net)}</strong>
+            </span>
+          </p>
+        )}
         <div className="actions">
           <button
             type="button"
