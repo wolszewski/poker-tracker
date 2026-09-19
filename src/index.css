@@ -381,7 +381,7 @@ button.small {
 }
 
 /* Laptop widths: the Players show as a grid (PlayerGrid). Keep the breakpoint in step with LAPTOP in App.tsx. */
-@media (min-width: 68rem) {
+@media (min-width: 69rem) {
   .app {
     max-width: 80rem;
   }

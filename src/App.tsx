@@ -13,7 +13,7 @@ import { useMediaQuery } from './useMediaQuery'
 export type Apply = (change: (night: Night) => Change) => string | undefined
 
 /** Above this width the Players show as a grid; below it, as cards. Keep in step with the media query in index.css. */
-const LAPTOP = '(min-width: 68rem)'
+const LAPTOP = '(min-width: 69rem)'
 
 export default function App() {
   const [night, setNight] = useState(() => loadNight(readSaved()))

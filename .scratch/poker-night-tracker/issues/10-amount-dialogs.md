@@ -2,7 +2,7 @@
 
 **What to build:** Make each Player's controls less cluttered. Today every Player shows two always-visible amount fields: the custom-amount Buy-in field with its **Add Buy-in** button, and the Cash-out field with its **Cash out** button. Replace each field-and-button pair with a single button that opens a small dialog where the Host types the amount.
 
-- **Buy-in:** the custom-amount field and its button become one **Add** button. It opens a dialog titled with the Player's name ("Add Buy-in for Alice"), with one amount field and **Add** and **Cancel** buttons. Quick-add +50 and +100 stay as they are, one tap and no dialog.
+- **Buy-in:** the custom-amount field and its button become one **Other…** button. It opens a dialog titled with the Player's name ("Add Buy-in for Alice"), with one amount field and **Add** and **Cancel** buttons. Quick-add +50 and +100 stay as they are, one tap and no dialog.
 - **Cash-out, still playing:** the Cash-out field and its button become one **Cash out** button. It opens a dialog ("Cash-out for Alice") with one amount field and **Save** and **Cancel** buttons.
 - **Cash-out, finished:** the **Change Cash-out** and **Back to playing** buttons become one **Change Cash-out** button. It opens the same dialog, with the field filled in with the current Cash-out. The dialog also has a **Back to playing** button that clears the Cash-out. The Player's controls then no longer show an inline edit form or a separate clear button.
 
@@ -17,8 +17,8 @@ This applies to both layouts, the phone cards and the laptop grid from ticket 09
 
 **Status:** done
 
-- [x] Each Player shows **+50**, **+100** and one **Add** button for Buy-ins, with no always-visible amount field, in both the cards and the grid.
-- [x] **Add** opens a dialog for that Player. A valid amount adds the Buy-in and closes the dialog. An invalid amount shows the same validation message as today, and the dialog stays open.
+- [x] Each Player shows **+50**, **+100** and one **Other…** button for Buy-ins, with no always-visible amount field, in both the cards and the grid.
+- [x] **Other…** opens a dialog for that Player. A valid amount adds the Buy-in and closes the dialog. An invalid amount shows the same validation message as today, and the dialog stays open.
 - [x] A Player still playing shows one **Cash out** button with no always-visible field. It opens a dialog, and a valid amount sets the Cash-out and closes it.
 - [x] A finished Player shows one **Change Cash-out** button. It opens the dialog with the current Cash-out filled in. The dialog can save a new amount or send the Player back to playing, which clears their Cash-out.
 - [x] The dialogs open with the field focused. Enter submits, and Escape and Cancel close them without changing anything.

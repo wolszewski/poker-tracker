@@ -7,7 +7,7 @@ import { addBuyIn, removePlayer, type Player } from './night/night'
 
 type Props = { player: Player; apply: Apply }
 
-/** Quick-add 50 and 100, and an Add button that asks for any other amount in a dialog. */
+/** Quick-add 50 and 100, and an Other… button that asks for any other amount in a dialog. */
 export function AddBuyIn({ player, apply }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [error, setError] = useState<string>()
@@ -29,7 +29,7 @@ export function AddBuyIn({ player, apply }: Props) {
           setDialogOpen(true)
         }}
       >
-        Add
+        Other…
       </button>
       {error && <p className="error">{error}</p>}
       {dialogOpen && (
