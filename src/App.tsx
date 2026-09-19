@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AddPlayerForm } from './AddPlayerForm'
+import { CopySummary } from './CopySummary'
 import { emptyNight, loadNight, saveNight, type Change, type Night } from './night/night'
 import { PlayerCard } from './PlayerCard'
 import { readSaved, writeSaved } from './storage'
@@ -32,6 +33,7 @@ export default function App() {
       <TotalsBar night={night} />
 
       <div className="night-actions">
+        <CopySummary night={night} />
         <button
           type="button"
           className="danger"

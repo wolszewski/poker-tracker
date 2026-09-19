@@ -176,6 +176,23 @@ export const formatAmount = (amount: Amount): string => {
 export const formatSigned = (amount: Amount): string =>
   amount > 0 ? `+${formatAmount(amount)}` : formatAmount(amount)
 
+const summaryLine = (night: Night, player: Player): string => {
+  const boughtIn = `${player.name}: bought in ${formatAmount(totalBuyIn(night, player.id))}`
+  const net = netResult(night, player.id)
+  if (player.cashOut == null || net === undefined) return `${boughtIn}, still playing`
+  return `${boughtIn}, cashed out ${formatAmount(player.cashOut)}, net ${formatSigned(net)}`
+}
+
+/** The plain-text summary of the Night that the Host pastes into the group chat. */
+export const summary = (night: Night): string =>
+  [
+    'Poker Night',
+    ...night.players.map((player) => summaryLine(night, player)),
+    `Total buy-ins: ${formatAmount(totalBuyIns(night))}`,
+    `Total cash-outs: ${formatAmount(totalCashOuts(night))}`,
+    `Discrepancy: ${formatSigned(discrepancy(night))}`,
+  ].join('\n')
+
 // Saving: a Night as a string, with a format version so the format can change later.
 
 const SAVE_VERSION = 1

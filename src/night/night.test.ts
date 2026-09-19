@@ -19,6 +19,7 @@ import {
   saveNight,
   setCashOut,
   stillPlaying,
+  summary,
   totalBuyIn,
   totalBuyIns,
   totalCashOuts,
@@ -372,5 +373,45 @@ describe('saving and loading', () => {
     const saved = JSON.parse(saveNight(fullNight()))
     saved.version = 2
     expect(loadNight(JSON.stringify(saved))).toEqual(emptyNight())
+  })
+})
+
+describe('the summary', () => {
+  it('lists every finished Player, the totals and a Discrepancy of 0', () => {
+    let night = nightWith('Alice', 'Bob')
+    night = buyIns(night, 0, '50', '50')
+    night = buyIns(night, 1, '100')
+    night = cashOut(night, 0, '150.5')
+    night = cashOut(night, 1, '49.5')
+    expect(summary(night)).toBe(
+      [
+        'Poker Night',
+        'Alice: bought in 100, cashed out 150.5, net +50.5',
+        'Bob: bought in 100, cashed out 49.5, net -50.5',
+        'Total buy-ins: 200',
+        'Total cash-outs: 200',
+        'Discrepancy: 0',
+      ].join('\n'),
+    )
+  })
+
+  it('shows Players still playing and a non-zero Discrepancy', () => {
+    let night = nightWith('Alice', 'Bob', 'Carol')
+    night = buyIns(night, 0, '100')
+    night = buyIns(night, 1, '50')
+    night = buyIns(night, 2, '50')
+    night = cashOut(night, 0, '120')
+    night = cashOut(night, 2, '0')
+    expect(summary(night)).toBe(
+      [
+        'Poker Night',
+        'Alice: bought in 100, cashed out 120, net +20',
+        'Bob: bought in 50, still playing',
+        'Carol: bought in 50, cashed out 0, net -50',
+        'Total buy-ins: 200',
+        'Total cash-outs: 120',
+        'Discrepancy: -80',
+      ].join('\n'),
+    )
   })
 })
