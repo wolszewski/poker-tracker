@@ -15,6 +15,8 @@ export type Player = {
   readonly id: string
   readonly name: string
   readonly buyIns: readonly BuyIn[]
+  /** Set once the Player has left and handed back their chips. */
+  readonly cashOut: Amount | null
 }
 
 export type Night = {
@@ -35,7 +37,7 @@ export const addPlayer = (night: Night, name: string): Change => {
   const trimmed = name.trim()
   if (trimmed === '') return rejected('Enter a name.')
   return changed({
-    players: [...night.players, { id: `p${night.nextId}`, name: trimmed, buyIns: [] }],
+    players: [...night.players, { id: `p${night.nextId}`, name: trimmed, buyIns: [], cashOut: null }],
     nextId: night.nextId + 1,
   })
 }
@@ -52,7 +54,7 @@ export const removePlayer = (night: Night, playerId: string): Change => {
   return changed({ ...night, players: night.players.filter((player) => player.id !== playerId) })
 }
 
-type Parsed ={ ok: true; amount: Amount } | { ok: false; error: string }
+type Parsed = { ok: true; amount: Amount } | { ok: false; error: string }
 
 /** Reads an amount typed by the Host: 0 or more, with up to 2 decimal places. */
 const parseAmount = (text: string): Parsed => {
@@ -116,15 +118,60 @@ export const deleteBuyIn = (night: Night, buyInId: string): Change => {
   return changed(updateBuyIns(night, (buyIns) => buyIns.filter((buyIn) => buyIn.id !== buyInId)))
 }
 
-export const totalBuyIn =(night: Night, playerId: string): Amount =>
+export const setCashOut = (night: Night, playerId: string, amountText: string): Change => {
+  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  const parsed = parseAmount(amountText)
+  if (!parsed.ok) return rejected(parsed.error)
+  return changed({
+    ...night,
+    players: updatePlayer(night, playerId, (player) => ({ ...player, cashOut: parsed.amount })),
+  })
+}
+
+/** Clears a Player's Cash-out, putting them back to still playing. */
+export const clearCashOut = (night: Night, playerId: string): Change => {
+  if (!findPlayer(night, playerId)) return rejected('That Player is not in the Night.')
+  return changed({
+    ...night,
+    players: updatePlayer(night, playerId, (player) => ({ ...player, cashOut: null })),
+  })
+}
+
+export const isFinished = (night: Night, playerId: string): boolean =>
+  findPlayer(night, playerId)?.cashOut != null
+
+/** Cash-out minus Total buy-in; undefined while the Player is still playing. */
+export const netResult = (night: Night, playerId: string): Amount | undefined => {
+  const cashOut = findPlayer(night, playerId)?.cashOut
+  if (cashOut == null) return undefined
+  return cents(cashOut - totalBuyIn(night, playerId))
+}
+
+export const totalBuyIn = (night: Night, playerId: string): Amount =>
   sum(findPlayer(night, playerId)?.buyIns.map((buyIn) => buyIn.amount) ?? [])
 
 export const totalBuyIns = (night: Night): Amount =>
   sum(night.players.map((player) => totalBuyIn(night, player.id)))
 
-export const totalCashOuts = (_night: Night): Amount => cents(0)
+/** The sum of the Cash-outs recorded so far. */
+export const totalCashOuts = (night: Night): Amount =>
+  sum(night.players.flatMap((player) => (player.cashOut == null ? [] : [player.cashOut])))
 
 export const discrepancy = (night: Night): Amount =>
   cents(totalCashOuts(night) - totalBuyIns(night))
 
-export const formatAmount = (amount: Amount): string => String(amount / 100)
+/** Players who have no Cash-out yet. */
+export const stillPlaying = (night: Night): readonly Player[] =>
+  night.players.filter((player) => player.cashOut == null)
+
+/** Shows an amount as a plain number with no currency, dropping trailing zeros: 300, 301.5, 0.05. */
+export const formatAmount = (amount: Amount): string => {
+  const sign = amount < 0 ? '-' : ''
+  const whole = Math.floor(Math.abs(amount) / 100)
+  const fraction = String(Math.abs(amount) % 100).padStart(2, '0').replace(/0+$/, '')
+  return `${sign}${whole}${fraction ? `.${fraction}` : ''}`
+}
+
+/** Like formatAmount, with a + on positive amounts, as used for Net results. */
+export const formatSigned = (amount: Amount): string =>
+  amount > 0 ? `+${formatAmount(amount)}` : formatAmount(amount)

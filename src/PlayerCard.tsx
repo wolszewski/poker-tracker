@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import type { Apply } from './App'
 import { BuyInItem } from './BuyInItem'
-import { addBuyIn, formatAmount, removePlayer, totalBuyIn, type Night, type Player } from './night/night'
+import { CashOut } from './CashOut'
+import { addBuyIn, formatAmount, isFinished, removePlayer, totalBuyIn, type Night, type Player } from './night/night'
 
 type Props = { night: Night; player: Player; apply: Apply }
 
 export function PlayerCard({ night, player, apply }: Props) {
   const [customAmount, setCustomAmount] = useState('')
   const [error, setError] = useState<string>()
+  const finished = isFinished(night, player.id)
 
   const buyIn = (amount: string) => {
     const failure = apply((n) => addBuyIn(n, player.id, amount))
@@ -16,9 +18,10 @@ export function PlayerCard({ night, player, apply }: Props) {
   }
 
   return (
-    <li className="card">
+    <li className={`card ${finished ? 'finished' : ''}`}>
       <header className="card-header">
         <h2>{player.name}</h2>
+        <span className={`status ${finished ? 'done' : ''}`}>{finished ? 'Finished' : 'Playing'}</span>
         <button
           type="button"
           className="small danger"
@@ -73,6 +76,8 @@ export function PlayerCard({ night, player, apply }: Props) {
         <button type="submit">Add Buy-in</button>
       </form>
       {error && <p className="error">{error}</p>}
+
+      <CashOut night={night} player={player} apply={apply} />
     </li>
   )
 }
