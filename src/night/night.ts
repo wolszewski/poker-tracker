@@ -190,15 +190,16 @@ export type Settlement =
         | { kind: 'discrepancy'; discrepancy: Amount }
     }
 
-type Balance = { id: string; net: number }
+/** A finished Player's Net result, in hundredths, as the Settlement works on it. */
+type PlayerNet = { id: string; net: number }
 
 /** Biggest loser pays biggest winner, repeated. Ties go to the Player added first. */
-const greedyTransfers = (balances: readonly Balance[]): Transfer[] => {
-  const open = balances.map((balance) => ({ ...balance }))
+const greedyTransfers = (playerNets: readonly PlayerNet[]): Transfer[] => {
+  const open = playerNets.map((playerNet) => ({ ...playerNet }))
   const transfers: Transfer[] = []
   const biggest = (sign: 1 | -1) =>
-    open.reduce<Balance | undefined>(
-      (best, balance) => (balance.net * sign > 0 && (!best || balance.net * sign > best.net * sign) ? balance : best),
+    open.reduce<PlayerNet | undefined>(
+      (best, playerNet) => (playerNet.net * sign > 0 && (!best || playerNet.net * sign > best.net * sign) ? playerNet : best),
       undefined,
     )
   for (;;) {
@@ -213,41 +214,41 @@ const greedyTransfers = (balances: readonly Balance[]): Transfer[] => {
 }
 
 /**
- * Splits the balances into the largest number of groups that each sum to 0.
+ * Splits the Players into the largest number of groups whose Net results each sum to 0.
  * A group of k Players can then be squared with k − 1 Transfers, which is the minimum overall.
  * Exhaustive over subsets, so only for small Nights.
  */
-const zeroSumGroups = (balances: readonly Balance[]): Balance[][] => {
-  const n = balances.length
+const zeroSumGroups = (playerNets: readonly PlayerNet[]): PlayerNet[][] => {
+  const n = playerNets.length
   const full = (1 << n) - 1
   const sums = new Array<number>(full + 1).fill(0)
   // most[mask]: the most zero-sum groups the Players in mask can be split into, when mask sums to 0.
   const most = new Array<number>(full + 1).fill(0)
   for (let mask = 1; mask <= full; mask++) {
     const lowest = 31 - Math.clz32(mask & -mask)
-    sums[mask] = sums[mask & (mask - 1)] + balances[lowest].net
+    sums[mask] = sums[mask & (mask - 1)] + playerNets[lowest].net
     for (let i = 0; i < n; i++) {
       if (mask & (1 << i)) most[mask] = Math.max(most[mask], most[mask ^ (1 << i)])
     }
     if (sums[mask] === 0) most[mask] += 1
   }
   // Walk back from everyone, peeling off Players in an order where each group's members are adjacent.
-  const order: Balance[] = []
+  const order: PlayerNet[] = []
   let mask = full
   while (mask) {
     const bonus = sums[mask] === 0 ? 1 : 0
     let i = 0
     while (!(mask & (1 << i)) || most[mask ^ (1 << i)] + bonus !== most[mask]) i++
-    order.push(balances[i])
+    order.push(playerNets[i])
     mask ^= 1 << i
   }
   order.reverse()
-  const groups: Balance[][] = []
-  let group: Balance[] = []
+  const groups: PlayerNet[][] = []
+  let group: PlayerNet[] = []
   let running = 0
-  for (const balance of order) {
-    group.push(balance)
-    running += balance.net
+  for (const playerNet of order) {
+    group.push(playerNet)
+    running += playerNet.net
     if (running === 0) {
       groups.push(group)
       group = []
@@ -262,17 +263,17 @@ const EXACT_SETTLEMENT_LIMIT = 10
 export const settle = (night: Night): Settlement => {
   const playing = stillPlaying(night)
   if (playing.length > 0) return { available: false, reason: { kind: 'still-playing', players: playing } }
-  const gap = discrepancy(night)
-  if (gap !== 0) return { available: false, reason: { kind: 'discrepancy', discrepancy: gap } }
-  const balances = night.players
+  const off = discrepancy(night)
+  if (off !== 0) return { available: false, reason: { kind: 'discrepancy', discrepancy: off } }
+  const playerNets = night.players
     .map((player) => ({ id: player.id, net: netResult(night, player.id) ?? 0 }))
-    .filter((balance) => balance.net !== 0)
+    .filter((playerNet) => playerNet.net !== 0)
   if (night.players.length > EXACT_SETTLEMENT_LIMIT) {
-    return { available: true, transfers: greedyTransfers(balances) }
+    return { available: true, transfers: greedyTransfers(playerNets) }
   }
   // Keep each group in the order the Players were added, so the output reads naturally.
-  const position = (balance: Balance) => balances.indexOf(balance)
-  const groups = zeroSumGroups(balances)
+  const position = (playerNet: PlayerNet) => playerNets.indexOf(playerNet)
+  const groups = zeroSumGroups(playerNets)
     .map((group) => [...group].sort((a, b) => position(a) - position(b)))
     .sort((a, b) => position(a[0]) - position(b[0]))
   return { available: true, transfers: groups.flatMap(greedyTransfers) }

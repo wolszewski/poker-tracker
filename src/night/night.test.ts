@@ -288,7 +288,7 @@ describe('the Discrepancy', () => {
     expect(formatAmount(discrepancy(night))).toBe('0')
   })
 
-  it('shows rounding gaps exactly', () => {
+  it('shows a small rounding Discrepancy exactly', () => {
     let night = nightWith('Alice', 'Bob')
     night = buyIns(night, 0, '0.1')
     night = buyIns(night, 1, '0.2')
@@ -513,6 +513,12 @@ describe('Settlement Transfers', () => {
     const night = finishedNight({ A: 12, B: 8, C: -5, D: -5, E: -10 })
     expect(transfersOf(loadNight(saveNight(night)))).toEqual(transfersOf(night))
     expect(transfersOf(night)).toEqual(transfersOf(night))
+  })
+
+  it('uses the greedy method above 10 Players', () => {
+    // The Night that needs 3 Transfers at 5 Players, plus 6 Players at 0: greedy now uses 4.
+    const night = finishedNight({ Alice: 5, Bob: 4, Carol: -4, Dave: -3, Erin: -2, F: 0, G: 0, H: 0, I: 0, J: 0, K: 0 })
+    expect(expectSquared(night)).toHaveLength(4)
   })
 
   it('still squares everyone with the greedy method above 10 Players', () => {

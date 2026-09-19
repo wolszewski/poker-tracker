@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Apply } from './App'
-import { clearCashOut, formatAmount, formatSigned, netResult, setCashOut, type Night, type Player } from './night/night'
+import { clearCashOut, formatAmount, formatSigned, isFinished, netResult, setCashOut, type Night, type Player } from './night/night'
 
 type Props = { night: Night; player: Player; apply: Apply }
 
@@ -10,7 +10,7 @@ export function CashOut({ night, player, apply }: Props) {
   const [error, setError] = useState<string>()
   const net = netResult(night, player.id)
 
-  if (player.cashOut != null && net !== undefined && !editing) {
+  if (isFinished(night, player.id) && player.cashOut != null && net !== undefined && !editing) {
     return (
       <div className="cash-out">
         <p className="result">
